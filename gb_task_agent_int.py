@@ -5,7 +5,14 @@ from GbAgent import Agent
 
 
 def gb_task_agent_int(task_vars, agent_vars, sim_vars, **kwargs):
-    # This function simulates the interaction of the task- and agent-object
+    """ This function simulates the interaction of the task- and agent-object
+
+    :param task_vars:
+    :param agent_vars:
+    :param sim_vars:
+    :param kwargs:
+    :return:
+    """
 
     real_outc = kwargs.get('real_outc', None)
 
@@ -43,15 +50,18 @@ def gb_task_agent_int(task_vars, agent_vars, sim_vars, **kwargs):
     for t in range(0, T):
 
         # Task-agent interaction
+        # ----------------------
         if real_outc is None:
             task.state_sample()
             task.contrast_sample()
-
         else:
             task.s_t = real_outc['s_t'][t]
             task.c_t = real_outc['u_t'][t]
 
+        # Contrast difference
         agent.observation_sample(task.c_t)
+
+        # Perceptual decision making
         if sim_vars.take_pd == 1:
             agent.d_t = np.int(real_outc['d_t'][t])
         else:
@@ -59,9 +69,13 @@ def gb_task_agent_int(task_vars, agent_vars, sim_vars, **kwargs):
 
         if task_vars.experiment == 2 or task_vars.experiment == 3:
 
+            # Economic decision making
             agent.decide_e()
+
+            # Reward delivery
             task.reward_sample(agent.a_t)
 
+            # Learning
             agent.learn(task.r_t)
 
             # Determine if high reward action was chosen
@@ -78,8 +92,8 @@ def gb_task_agent_int(task_vars, agent_vars, sim_vars, **kwargs):
         d[t] = agent.d_t
         if task_vars.experiment == 2 or task_vars.experiment == 3:
             e_mu_t[t] = agent.G
-            v_a_0[t] = agent.v_a_0
-            v_a_1[t] = agent.v_a_1
+            v_a_0[t] = agent.v_a_t[0]
+            v_a_1[t] = agent.v_a_t[1]
             a[t] = agent.a_t
             p_a0_t[t] = agent.p_a_t[0]
             p_a1_t[t] = agent.p_a_t[1]

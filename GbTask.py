@@ -7,13 +7,13 @@ class Task:
     def __init__(self, task_vars):
         """ This function defines the instance variable unique to each instance
 
-                        All instance variables of task_vars object
-                C:      Discrete set of contrast differences
-                p_cs:   Discrete uniform distribution paramters of p(c_t|s_t)
-                p_ras:  Bernoulli distribution parameters of p^(a_t)(r_t|s,\mu)
-                s_t:    Current state
-                c_t:    Current contrast difference
-                r_t:    Current reward
+                All instance variables of task_vars object
+                C: Discrete set of contrast differences
+                p_cs: Discrete uniform distribution paramters of p(c_t|s_t)
+                p_ras: Bernoulli distribution parameters of p^(a_t)(r_t|s,mu)
+                s_t: Current state
+                c_t: Current contrast difference
+                r_t: Current reward
 
         :param task_vars: Object with task parameters
         """

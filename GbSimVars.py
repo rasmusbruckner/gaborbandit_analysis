@@ -7,12 +7,12 @@ class SimVars:
     def __init__(self):
         """ This function defines the instance variable unique to each instance
 
-        take_pd:    Indicates if perceptual decisions of participants will be used in simulations
-        N:          Number of participants
-        n_sim:         Number of simulations
-        block:      Currnent block number
-        agent:      Current agent-based computational model
-        param:      Range of parameter
+        take_pd: Indicates if perceptual decisions of participants will be used in simulations
+        N: Number of participants
+        n_sim: Number of simulations
+        block: Current block number
+        agent: Current agent-based computational model
+        param_range: Range of parameter
         """
 
         self.take_pd = 0

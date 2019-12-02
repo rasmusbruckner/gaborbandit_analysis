@@ -1,23 +1,33 @@
 """ This script runs the preprocessing steps
 
-    1) Load pseudonymized data
+    1) Load BIDS formatted data
     2) Create preprocessed data frames for each experiment
     3) Save data
 
 """
-import numpy as np
-import pandas as pd
-import os
+
+
 import sys
+import os
+from fnmatch import fnmatch
+from gb_loaddata import loaddata
+from gb_compute_misses import compute_misses
 
-# Add path
-#path = '/Users/rasmus/Dropbox/gabor_bandit/code/python'
-#os.chdir(path)
+# 1) Load BIDS formatted data
+# ---------------------------
 
-# 1) Load pseudonymized data
-# --------------------------
+# Set path and directory
+my_path = '/Users/rasmus/Dropbox/gabor_bandit/code/gaborbandit_analysis/gb_data'
+os.chdir(my_path)
 
-data_pn = pd.read_pickle('gb_data/gb_data_pn.pkl')
+filenames = []
+for path, subdirs, files in os.walk(my_path + '/BIDS/behav/'):
+    for name in files:
+        if fnmatch(name, "*.tsv"):
+            filenames.append(os.path.join(path, name))
+
+# Put pseudonomized BIDS data in a single data frame
+data_pn = loaddata(filenames)
 
 # Number of subjects
 N = len(list(set(data_pn['participant'])))
@@ -26,48 +36,37 @@ N = len(list(set(data_pn['participant'])))
 # ------------------------------------------------------
 
 # Experiment 1 - Perceptual decision making
-exp1_data = data_pn[(data_pn['d_t'].notna()) & (data_pn['whichLoop'] == 'patches') & (data_pn['complete'])].copy()
+exp1_data = data_pn[(data_pn['d_t'].notna()) & (data_pn['trial_type'] == 'patches') & (data_pn['complete'])].copy()
 
 # Compute number of missed trials
-T__miss_exp1 = 100 - exp1_data['id'].value_counts()
-T_exp1_min = np.min(np.min(T__miss_exp1))
-T_exp1_max = np.max(T__miss_exp1)
-T_exp1_mean = np.mean(T__miss_exp1)
-T_exp1_sd = np.std(T__miss_exp1)
-T_exp1_sem = T_exp1_sd/np.sqrt(N)
+n_misses_1 = 100 - exp1_data['id'].value_counts()
+n_misses_min_1, n_misses_max_1, n_misses_mean_1, n_misses_sem_1 = compute_misses(n_misses_1, N)
 
 # Experiment 1 - Perceptual decision making
-exp1_data_recov = data_pn[(data_pn['whichLoop'] == 'patches') & (data_pn['complete'])].copy()
+exp1_data_recov = data_pn[(data_pn['trial_type'] == 'patches') & (data_pn['complete'])].copy()
 exp1_data_recov.loc[:, 'b_t'] = 0
 
+
 # Experiment 2 - Economic decisions making without perceptual uncertainty
+exp2_raw = data_pn[(data_pn['trial_type'] == 'main_safe')].copy()  # raw data to compute misses
 exp2_data = data_pn[(data_pn['missIndex'] == 0) & (data_pn['decision2.corr'].notna()) &
-                    (data_pn['whichLoop'] == 'main_safe')].copy()
-exp2_raw = data_pn[(data_pn['whichLoop'] == 'main_safe')].copy()
+                    (data_pn['trial_type'] == 'main_safe')].copy()  # preprocessed data for analysis
 
 # Extract number of blocks
 exp2_nb = len(set(list(exp2_data['b_t'])))
 
 # Compute number of missed trials
-T__miss_exp2 = exp2_raw['id'].value_counts() - 150
-T_exp2_min = np.min(np.min(T__miss_exp2))
-T_exp2_max = np.max(T__miss_exp2)
-T_exp2_mean = np.mean(T__miss_exp2)
-T_exp2_sd = np.std(T__miss_exp2)
-T_exp2_sem = T_exp2_sd/np.sqrt(N)
+n_misses_2 = exp2_raw['id'].value_counts() - 150
+n_misses_min_2, n_misses_max_2, n_misses_mean_2, n_misses_sem_2 = compute_misses(n_misses_2, N)
 
 # Experiment 3 - Economic decision making with perceptual uncertainty
+exp3_raw = data_pn[(data_pn['trial_type'] == 'main_unc')].copy()  # raw data to compute misses
 exp3_data = data_pn[(data_pn['missIndex'] == 0) & (data_pn['decision2.corr'].notna()) &
-                    (data_pn['whichLoop'] == 'main_unc')].copy()
+                    (data_pn['trial_type'] == 'main_unc')].copy()  # preprocessed data for analysis
 
 # Compute number of missed trials
-exp3_raw = data_pn[(data_pn['whichLoop'] == 'main_unc')].copy()
-T__miss_exp3 = exp3_raw['id'].value_counts() - 300
-T_exp3_min = np.min(np.min(T__miss_exp3))
-T_exp3_max = np.max(T__miss_exp3)
-T_exp3_mean = np.mean(T__miss_exp3)
-T_exp3_sd = np.std(T__miss_exp3)
-T_exp3_sem = T_exp3_sd/np.sqrt(N)
+n_misses_3 = exp3_raw['id'].value_counts() - 300
+n_misses_min_3, n_misses_max_3, n_misses_mean_3, n_misses_sem_3 = compute_misses(n_misses_3, N)
 
 # Extract number of blocks
 exp3_nb = len(set(list(exp3_data['blockNumber'])))
@@ -81,9 +80,18 @@ n_subj_3 = len(list(set(exp3_data['participant'])))
 if not n_subj_1 == n_subj_2 == n_subj_3:
     sys.exit("Unequal number of participants")
 
+# todo: das am ende dann anpassen, wenn sicher ist, dass alles stimmt!
+# für gb_figure_1 stimmt es!
+# ...
+
 #  3) Save data
 # -------------
-exp1_data.to_pickle('gb_data/gb_exp1_data.pkl')
-exp1_data_recov.to_pickle('gb_data/gb_exp1_data_recov.pkl')
-exp2_data.to_pickle('gb_data/gb_exp2_data.pkl')
-exp3_data.to_pickle('gb_data/gb_exp3_data.pkl')
+# exp1_data.to_pickle('gb_data/gb_exp1_data.pkl')
+# exp1_data_recov.to_pickle('gb_data/gb_exp1_data_recov.pkl')
+# exp2_data.to_pickle('gb_data/gb_exp2_data.pkl')
+# exp3_data.to_pickle('gb_data/gb_exp3_data.pkl')
+
+exp1_data.to_pickle('gb_exp1_data_final.pkl')
+exp1_data_recov.to_pickle('gb_exp1_data_recov_final.pkl')
+exp2_data.to_pickle('gb_exp2_data_final.pkl')
+exp3_data.to_pickle('gb_exp3_data_final.pkl')

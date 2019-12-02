@@ -1,89 +1,107 @@
+""" This script demonstrates learning in A1 using the analytical solution and the numerical approximation
+
+    1. Systematically compare analytical and numerical solution
+    2. Illustration of numerical solution
+"""
+
 import numpy as np
-import pandas as pd
-from GbTaskVars import TaskVars
-from GbAgentVars import AgentVars
-from GbSimVars import SimVars
-from gb_task_agent_int import gb_task_agent_int
-from time import sleep
-from tqdm import tqdm
+import matplotlib
+import matplotlib.pyplot as plt
+import seaborn as sns
+from gb_simulation import gb_simulation
+from latex_plt import latex_plt
+# Update matplotlib to use Latex and to change some defaults
+import os
+os.environ["PATH"] += os.pathsep + '/usr/local/texlive/2016/bin/x86_64-darwin'
+matplotlib = latex_plt(matplotlib)
 
+# Plot properties
+fontsize = 8
 
-# todo: das hier mit analytisch vergleichen..!
+# Create figure
+f = plt.figure()
+ax_0 = plt.gca()
 
-T = 25
+# -----------------------------------------------------------------
+# 1. Systematically compare analytical and numerical solution:
+# Systematically compare evolution of learned contingency parameter
+# between analytical and numerical solution
+# -----------------------------------------------------------------
+
+# Reset random number generator
+np.random.seed(123)
+
+# Simulation parameters
+T = 40
 B = 1
-sigma = 0.01
+sigma = 0.03
 beta = 100
-agent = 4
+agent = 1
 
-# This function runs the simulations for the model demonstration
+# Run simulation with analytical solution
+df_subj_a1 = gb_simulation(T, B, sigma, agent, beta, eval_ana=True)
+df_subj_a1['t'] = df_subj_a1['t']+1  # add 1 to trials to start plot with 1 instead of 0
 
-# Parameter definition
-# --------------------
-# Task parameters in GbTaskVars.py object
-task_vars = TaskVars()
-task_vars.T = T # 25  # number of trials per block
-task_vars.B = B  # number of blocks
-task_vars.mu = 0.8
-#task_vars.version = 0  # task version: 0 = main task; 1 = pure economic decisions making
-task_vars.experiment = 3  # experiment #3
+# Plot contingency parameter
+for _, group in df_subj_a1.groupby('block'):
+    group.plot(x='t', y='e_mu_t', ax=ax_0, legend=False, color='red', linewidth=4, alpha=1)
 
-# Agent parameters in GbAgentVars.py object
-agent_vars = AgentVars()
-agent_vars.sigma = sigma #0.06 ** 2 #0.0233 ** 2 #0.06 ** 2  # discrimination sensitivity
-agent_vars.beta = beta  # inverse temperature parameter
-agent_vars.c0 = np.array([1])  # uniform prior distribution over mu
-agent_vars.kappa = task_vars.kappa  # maximal contrast difference value
+# Reset random number generator
+np.random.seed(123)
 
-#agent_vars.agent = model_space[0]  # 0: d_t; 1: o_t; 2: u_t; 3: binary belief state
-agent_vars.agent = agent  # 0: d_t; 1: o_t; 2: u_t; 3: binary belief state
-agent_vars.lambda_param = np.nan
+# Run simulation with numerical solution
+df_subj_a1 = gb_simulation(T, B, sigma, agent, beta, eval_ana=False)
+df_subj_a1['t'] = df_subj_a1['t']+1  # add 1 to trials to start plot with 1 instead of 0
 
-# Simulation parameters in GbSimVars.py object
-sim_vars = SimVars()
+# Plot contingency parameter
+for _, group in df_subj_a1.groupby('block'):
+    group.plot(x='t', y='e_mu_t', ax=ax_0, legend=False, color='green', linewidth=1, alpha=1)
+ax_0.set_ylim([0.2, 1])
+ax_0.tick_params(labelsize=fontsize)
+ax_0.set_xlabel(r'Trial $(t)$', fontsize=fontsize)
+ax_0.set_ylabel(r'Expected Value ($E_{\mu}$)', fontsize=fontsize)
+ax_0.axhline(0.5, color='black', lw=0.5, linestyle='--')
+ax_0.axhline(0.8, color='black', lw=0.5, linestyle='--')
+plt.tight_layout()
+sns.despine()
 
-# Task-agent interaction simulations and evaluations
-# --------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
+# 2. Illustration of numerical solution:
+# Illustrate that learned contingency parameter converges towards 0.8 with numerical approximation to analytical
+# solution. Here we use the numerical approximation because the normalization step in the analytical solution
+# requires very small coefficients after a large amount of trials. In the numerical solution, we simply normalize using
+# numerical integration
+# ----------------------------------------------------------------------------------------------------------------------
 
-# Initialize data frame for simulation
-df_subj = pd.DataFrame()
+# Create figure
+f = plt.figure()
+ax_0 = plt.gca()
 
-sleep(0.1)
-print('\nSimulating data for agent demonstration:')
-sleep(0.1)
-pbar = tqdm(total=task_vars.B)
+# Simulation parameters
+T = 1000
+B = 10
+sigma = 0.03
+beta = 100  # beta parameter of softmax choice rule
+agent = 1
 
-# Cycle over task blocks
-for b in range(0, task_vars.B):
+# Run simulation
+df_subj_a1 = gb_simulation(T, B, sigma, agent, beta, eval_ana=False)
+df_subj_a1['t'] = df_subj_a1['t']+1  # add 1 to trials to start plot with 1 instead of 0
 
-    # Update progress bar
-    pbar.update(1)
+# Compute mean contingency parameter
+mean_corr_a1 = df_subj_a1.groupby(df_subj_a1['t'])['e_mu_t'].mean()
 
-    # Block number definition
-    sim_vars.block = b
-    sim_vars.take_pd = 0
+# Plot all contingency parameters
+for _, group in df_subj_a1.groupby('block'):
+    group.plot(x='t', y='e_mu_t', ax=ax_0, legend=False, color='gray', linewidth=1, alpha=1)
+ax_0.set_ylim([0.2, 1])
+ax_0.tick_params(labelsize=fontsize)
+ax_0.set_xlabel(r'Trial $(t)$', fontsize=fontsize)
+ax_0.set_ylabel(r'Expected Value ($E_{\mu}$)', fontsize=fontsize)
+x = np.linspace(1, T, T)
+ax_0.plot(x, mean_corr_a1, linewidth=4, color='green', alpha=1)
+ax_0.axhline(0.5, color='black', lw=0.5, linestyle='--')
+ax_0.axhline(0.8, color='black', lw=0.5, linestyle='--')
 
-    # Single block task-agent-interaction simulation
-    df_block = gb_task_agent_int(task_vars, agent_vars, sim_vars)
-
-    # Add data to data frame
-    df_subj = df_subj.append(df_block, ignore_index=True)
-
-######## nur zum spaß
-#import matplotlib.pyplot as plt
-
-#agent.p_mu = agent.p_mu/np.sum(agent.p_mu)
-plt.plot(agent.mu, agent.p_mu)
-print(np.sum(agent.p_mu))
-
-#% probability
-#mass
-#function
-#pmf = agent.p_mu / (np.sum(agent.p_mu))
-
-#x_1 = np.linspace(0, 1, 1000)
-
-ev = np.dot(agent.mu, agent.p_mu)
-
-
-######
+# Show plots
+plt.show()

@@ -12,6 +12,7 @@ from GbAgent import Agent
 from PHat import PHat
 from gb_cumcoeff import gb_cumcoeff
 from gb_invcumcoeff import gb_invcumcoeff
+from gb_plot_utils import label_subplots, cm2inch
 from time import sleep
 from tqdm import tqdm
 import sys
@@ -22,32 +23,60 @@ pgf_with_latex = {
     "text.usetex": True,
     "font.family": "serif",
     "font.sans-serif": [],
-    "axes.labelsize": 10,
-    "font.size": 10,
-    "legend.fontsize": 8,
-    "axes.titlesize": 14,
-    "xtick.labelsize": 8,
-    "ytick.labelsize": 8,
-    "figure.titlesize": 12,
+    "axes.labelsize": 6,
+    "font.size": 6,
+    "legend.fontsize": 6,
+    "axes.titlesize": 6,
+    "xtick.labelsize": 6,
+    "ytick.labelsize": 6,
+    "figure.titlesize": 6,
     "pgf.rcfonts": False,
+    "figure.dpi": 100,
     "text.latex.unicode": True,
     "pgf.preamble": [
-         r"\usepackage[utf8x]{inputenc}",
-         r"\usepackage[T1]{fontenc}",
-         r"\usepackage{cmbright}",
-         ]
+        r"\usepackage[utf8x]{inputenc}",
+        r"\usepackage[T1]{fontenc}",
+        r"\usepackage{cmbright}",
+    ]
 }
+
+# Update parameters
 matplotlib.rcParams.update(pgf_with_latex)
+#
+# # Use Latex for matplotlib
+# pgf_with_latex = {
+#     "pgf.texsystem": "pdflatex",
+#     "text.usetex": True,
+#     "font.family": "serif",
+#     "font.sans-serif": [],
+#     "axes.labelsize": 10,
+#     "font.size": 10,
+#     "legend.fontsize": 8,
+#     "axes.titlesize": 14,
+#     "xtick.labelsize": 8,
+#     "ytick.labelsize": 8,
+#     "figure.titlesize": 12,
+#     "pgf.rcfonts": False,
+#     "text.latex.unicode": True,
+#     "pgf.preamble": [
+#          r"\usepackage[utf8x]{inputenc}",
+#          r"\usepackage[T1]{fontenc}",
+#          r"\usepackage{cmbright}",
+#          ]
+# }
+# matplotlib.rcParams.update(pgf_with_latex)
 
 # Set random number generator for reproducible results
 np.random.seed(123)
 
-# todo: im ersten teil wird o_t nicht gesampled, im zweiten schon!
-# todo: vielleicht integral nehmen? kommentar in supplement stecken!
+# todo: im ersten teil wird o_t nicht gesampled, im zweiten schon! mit dirk bespechen...
+
+
+
 
 # Simulation parameters
 T = 26  # Number of trials
-n_samples = int(1e6)  # Number of samples
+n_samples = int(1e6) #int(1e1) #int(1e6)  # Number of samples
 n_bins = int(1e2)  # Number of bins for density approximation
 
 # Model parameters
@@ -65,8 +94,9 @@ task = Task(task_vars)
 
 # Agent parameters in AgentVars object
 agent_vars = AgentVars()
-agent_vars.agent = 4
+agent_vars.agent = 1
 agent_vars.sigma = sigma
+agent_vars.task_agent_analysis = False  # todo: achtung neu!
 agent = Agent(agent_vars)
 agent.d_t = 0  # Fix perceptual decision to d_t = 0
 agent.a_t = 0  # Fix action to a_t = 0
@@ -146,7 +176,7 @@ for sim in range(0, n_sim):
 
         # Set current agent variables
         agent.c_t = np.asarray(C_t[t-1])  # coefficient
-        agent.o_t = O_t[t-1]  # observation
+        agent.o_t = O_t[t-1]  # observation  todo: also hier müsste man doch eigentlich samplen!
 
         # Update polynomial coefficients
         agent.learn(R_t[t-1])
@@ -186,7 +216,7 @@ for sim in range(0, n_sim):
             S[2, s, t] = task.c_t
 
             # p(o_t|c_t)
-            agent.observation_sample(task.c_t)
+            agent.observation_sample(task.c_t)   # todo: check: hier wird anscheinend gesampled
             S[3, s, t] = agent.o_t
 
             # p(r_t|s_t)
@@ -223,7 +253,7 @@ for sim in range(0, n_sim):
 
                 # Set current agent variables
                 agent.c_t = np.asarray(C_t[t])  # coefficient
-                agent.o_t = p_hat.o[i]  # observation
+                agent.o_t = p_hat.o[i]  # observation  todo: hier mal schauen inwiefern hier gesampled wird?? bzw. wie man das machen müsste
 
                 # p_{t-1}(\mu|r_t = 0, o_t) analytical result
                 agent.learn(p_hat.r_e[r])
@@ -231,7 +261,11 @@ for sim in range(0, n_sim):
 
         # Initialize figure
         # -----------------
-        fig = plt.figure(figsize=(10, 10), dpi=100)
+        #fig = plt.figure(figsize=(10, 10), dpi=100)
+        fig_width = 15
+        fig_height = 20
+        f = plt.figure(figsize=cm2inch(fig_width, fig_height))
+
         ax_0 = plt.subplot2grid((4, 4), (0, 0), colspan=2)
         ax_1 = plt.subplot2grid((4, 4), (0, 2))
         ax_2 = plt.subplot2grid((4, 4), (0, 3))
@@ -356,20 +390,26 @@ for sim in range(0, n_sim):
         plt.subplots_adjust(top=0.95, bottom=0.05, left=0.1, right=0.9, hspace=1, wspace=1)
 
         # Add figure lables
-        fig.text(0.04, 0.95, "A)", horizontalalignment='left', verticalalignment='center')
-        fig.text(0.5, 0.95, "B)", horizontalalignment='left', verticalalignment='center')
-        fig.text(0.04, 0.7, "C)", horizontalalignment='left', verticalalignment='center')
-        fig.text(0.5, 0.7, "D)", horizontalalignment='left', verticalalignment='center')
-        fig.text(0.04, 0.45, "E)", horizontalalignment='left', verticalalignment='center')
-        fig.text(0.5, 0.45, "F)", horizontalalignment='left', verticalalignment='center')
-        fig.text(0.04, 0.2, "G)", horizontalalignment='left', verticalalignment='center')
-        fig.text(0.28, 0.2, "H)", horizontalalignment='left', verticalalignment='center')
-        fig.text(0.5, 0.2, "I)", horizontalalignment='left', verticalalignment='center')
-        fig.text(0.73, 0.2, "J)", horizontalalignment='left', verticalalignment='center')
+        # fig.text(0.04, 0.95, "A)", horizontalalignment='left', verticalalignment='center')
+        # fig.text(0.5, 0.95, "B)", horizontalalignment='left', verticalalignment='center')
+        # fig.text(0.04, 0.7, "C)", horizontalalignment='left', verticalalignment='center')
+        # fig.text(0.5, 0.7, "D)", horizontalalignment='left', verticalalignment='center')
+        # fig.text(0.04, 0.45, "E)", horizontalalignment='left', verticalalignment='center')
+        # fig.text(0.5, 0.45, "F)", horizontalalignment='left', verticalalignment='center')
+        # fig.text(0.04, 0.2, "G)", horizontalalignment='left', verticalalignment='center')
+        # fig.text(0.28, 0.2, "H)", horizontalalignment='left', verticalalignment='center')
+        # fig.text(0.5, 0.2, "I)", horizontalalignment='left', verticalalignment='center')
+        # fig.text(0.73, 0.2, "J)", horizontalalignment='left', verticalalignment='center')
+        # Label letters
+        texts = ['a', 'b ', 'c ', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k']
+
+        # Add labels
+        label_subplots(f, texts)
 
         # Save plot
-        savename = 'gb_figures/sampling_validation/sim_%s_t_%s.pdf' % (sim, t)
-        plt.savefig(savename)
+        # savename = 'gb_figures/sampling_validation/sim_%s_t_%s.pdf' % (sim, t)
+        savename = 'gb_figures/sampling_validation_final/sim_%s_t_%s.pdf' % (sim, t)
+        plt.savefig(savename, dpi=400, transparent=True)
         plt.close()
 
         # Update counter
@@ -383,9 +423,11 @@ data = np.concatenate((mu_bias_mean, bs0_bias_mean, bs1_bias_mean, rt0_bias_mean
 df = pd.DataFrame(data=data, columns=["param"])
 df['type'] = np.repeat(np.arange(5), T*n_sim)
 
+
 # Plot estimation biases
 plt.figure()
-ax = sns.pointplot(x='type', y='param', data=df, ci='sd', color='k')
+#ax = sns.pointplot(x='type', y='param', data=df, ci='sd', color='k')
+ax = sns.barplot(x='type', y='param', data=df, ci='sd', color='k')
 plt.ylabel("Estimation Bias")
 plt.ylim(-5, 5)
 plt.xlabel('Variable')
@@ -396,6 +438,7 @@ ax.set_xticklabels(a, rotation=30)
 plt.tight_layout()
 sns.despine()
 
-savename = 'gb_figures/SM_Fig4.pdf'
+# savename = 'gb_figures/SM_Fig4.pdf'
+savename = 'gb_figures/SM_gb_figure_2.pdf'
 plt.savefig(savename)
 plt.close()

@@ -8,23 +8,24 @@ from time import sleep
 from tqdm import tqdm
 
 
-def gb_simulation(T, B, sigma, agent, beta):
+def gb_simulation(n_trials, n_blocks, sigma, agent, beta, task_agent_analysis=False, eval_ana=True):
     """ This function runs the simulations for model demonstration
 
-    :param T:       Number of trials
-    :param B:       Number of blocks
-    :param sigma:   Perceptual sensitivity
-    :param agent:   Agent-based computational model
-    :param beta:    Inverse temperature parameter
+    :param n_trials: Number of trials
+    :param n_blocks: Number of blocks
+    :param sigma: Perceptual sensitivity
+    :param agent: Agent-based computational model
+    :param beta: Inverse temperature parameter
+    :param task_agent_analysis: Indicates if use for data analysis or not (todo: wird das überhaupt mit true benutzt?)
     :return: df_subj: Data frame containing simulated data
     """
-
+   # np.random.seed(123)
     # Parameter definition
     # --------------------
     # Task parameters in GbTaskVars.py object
     task_vars = TaskVars()
-    task_vars.T = T
-    task_vars.B = B
+    task_vars.T = n_trials
+    task_vars.B = n_blocks
     task_vars.experiment = 3  
 
     # Agent parameters in GbAgentVars.py object
@@ -35,12 +36,12 @@ def gb_simulation(T, B, sigma, agent, beta):
     agent_vars.kappa = task_vars.kappa 
     agent_vars.agent = agent
     agent_vars.lambda_param = np.nan
+    agent_vars.task_agent_analysis = task_agent_analysis  # todo: auch direkt beim callen?
 
+    ## todo: achtung!!! nur zum testen ausgestellt!
+    agent_vars.eval_ana = eval_ana
     # Simulation parameters in GbSimVars.py object
     sim_vars = SimVars()
-
-    # Task-agent interaction simulations and evaluations
-    # --------------------------------------------------
 
     # Initialize data frame for simulation
     df_subj = pd.DataFrame()
@@ -66,6 +67,7 @@ def gb_simulation(T, B, sigma, agent, beta):
         # Add data to data frame
         df_subj = df_subj.append(df_block, ignore_index=True)
 
+    # Close progress bar
     pbar.close()
 
     return df_subj
