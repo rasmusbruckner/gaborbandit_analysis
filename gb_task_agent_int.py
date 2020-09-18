@@ -7,11 +7,10 @@ from GbAgent import Agent
 def gb_task_agent_int(task_vars, agent_vars, sim_vars, **kwargs):
     """ This function simulates the interaction of the task- and agent-object
 
-    :param task_vars:
-    :param agent_vars:
-    :param sim_vars:
-    :param kwargs:
-    :return:
+    :param task_vars: Task parameters
+    :param agent_vars: Agent parameters
+    :param sim_vars: Simulation parameters
+    :return: df: Data-frame with task-agent interaction results
     """
 
     real_outc = kwargs.get('real_outc', None)

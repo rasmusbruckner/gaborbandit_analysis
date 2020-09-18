@@ -7,28 +7,16 @@ from GbAgentVars import AgentVars
 from GbAgent import Agent
 
 
-# todo: u_t in c_t umbenennen
-# bei BIC für perceptual decision klären, ob 0 uder 1 freier parameter benutzt wird? eigentlich einer oder?
-# perc_model eventuell in pdf_l_model umbenennen
-# bic mit trial und block checken
-# Bei plot schauen, ob überall wo gewünscht geplottet und gespeichert wird.
-# eine sache die mir schonmal auffällt, ist dass bei rl e_mu direkt nach dem lernen gesetzt wird.
-#  das könnte aber ok sein. -- > ändern, wenn ich Namen anpasse
-# blockNumber in b_t umbenennen
 class GbEstimation:
     # This class specifies instance variables and methods of the estimation object for parameter estimation
 
     def __init__(self, est_vars):
-        """ This function defines the instance variables unique to each instance
+        # his function defines the instance variables unique to each instance
 
-            See GbEstVars.py
-        """
-
+        # Estimation variables from GbEstVars
         self.T = est_vars.T
         self.B = est_vars.B
-        # self.n_sim = est_vars.n_sim
         self.n_sp = est_vars.n_sp
-        # self.experiment = est_vars.experiment
         self.n_ker = est_vars.n_ker
         self.agent = est_vars.agent
         self.s_bnds = est_vars.s_bnds
@@ -106,7 +94,6 @@ class GbEstimation:
         return results_list
 
     @staticmethod
-    # def d_llh(self, sigma, df, agent_vars):
     def d_llh(sigma, df, agent_vars):
         """ This function computes the likelihood of perceptual decisions
 
@@ -170,16 +157,18 @@ class GbEstimation:
 
         # Select current agent
         agent_vars.agent = est_vars.agent
-        self.agent = est_vars.agent  # todo: kann man das nicht direkt an estimation übergeben und hier rausnehmen?
+        self.agent = est_vars.agent
 
-        # checken, warum zweimal trial so bearbeitet wird
-        # exp_data.loc[:, 'trial'] = np.linspace(0, len(exp_data)-1, len(exp_data))
-        # exp_data = exp_data.set_index('trial')
+        # eventuell reset_index() anstatt andere Lösung.
+        # --> https://cmdlinetips.com/2018/04/how-to-reset-index-in-pandas-dataframe/
+        # Reset index for perceptual parameter estimation
+        exp_data.loc[:, 'trial'] = np.linspace(0, len(exp_data)-1, len(exp_data))
+        exp_data = exp_data.set_index('trial')
 
         # Evaluate likelihood of perceptual decisions
         f_llh_d = self.d_llh(sub_params['sigma'], exp_data, agent_vars)
 
-        # Add trial as index
+        # Reset index for additional parameter estimation
         exp_data.loc[:, 'trial'] = np.tile(np.linspace(0, self.T-1, self.T), self.B)
         exp_data = exp_data.set_index('trial')
 
@@ -187,7 +176,7 @@ class GbEstimation:
         self.id = np.array(list(set(exp_data['id'])))
 
         # Estimate free parameters
-        if est_params:  # == 1:
+        if est_params:
 
             # Initialize values
             min_llh = 1e10  # unrealistically high likelihood
@@ -239,8 +228,8 @@ class GbEstimation:
                     bounds = [self.l_bnds, self.a_bnds, self.b_bnds]
 
                 # Run the estimation
-                res = minimize(self.a_llh, x0, args=(exp_data, sub_params, agent_vars, est_params),
-                               method='L-BFGS-B', bounds=bounds)
+                res = minimize(self.a_llh, x0, args=(exp_data, sub_params, agent_vars, est_params), method='L-BFGS-B',
+                               bounds=bounds)
 
                 # Extract maximum likelihood parameter estimate
                 x = res.x
@@ -301,7 +290,7 @@ class GbEstimation:
         results_list.append(np.float(self.id))
         results_list.append(np.float(self.agent))
 
-        if est_params:  # == 1:
+        if est_params:
             min_x = min_x.tolist()
             results_list = results_list + min_x
 
@@ -311,7 +300,7 @@ class GbEstimation:
         """ This function computes the likelihood of economic decisions
 
             Used to estimate the beta parameter of the softmax choice rule and
-            the lambda parameter of agent A3. The function is also used to evaluate
+            the lambda parameter. The function is also used to evaluate
             the likelihood of the economic decisions based on fixed parameters
 
         :param x: Free parameter
@@ -344,7 +333,7 @@ class GbEstimation:
             agent = Agent(agent_vars)
 
             # Assign current sigma parameter
-            agent.sigma = np.array(sub_params['sigma'])  # sub_params['sigma']
+            agent.sigma = np.array(sub_params['sigma'])
 
             # Assign current beta and (if required) lambda parameter
             if self.agent == 0 or self.agent == 1 or self.agent == 2:
@@ -362,7 +351,6 @@ class GbEstimation:
                 agent.beta = x[2]
 
             # Initialize block specific variables
-            # rel_r_t = np.full(self.T, np.nan)  # choice probability
             cp = np.full(self.T, np.nan)  # choice probability
             ev = np.full(self.T, np.nan)  # expected value
             cond_ev = np.full([self.T, 2], np.nan)  # conditional expected value
@@ -416,8 +404,6 @@ class GbEstimation:
                 plt.plot(ev)  # expected value
                 plt.plot(cp)  # choice probability
                 plt.plot(r, 'o')  # reward
-                # plt.plot(rel_r_t, 'o')
-                # plt.ylim([0, 1])
 
                 # Plot choices
                 plt.subplot(4, 6, b+c_indx)
@@ -462,9 +448,10 @@ class GbEstimation:
 
         :param llh: Negative log likelihood
         :param n_params: Number of free parameters
-        :return: bic
+        :return: BIC
         """
 
-        bic = (-1 * llh) - (n_params / 2) * np.log(self.T*self.B)
+        # Eq. 42
+        bic = (-1 * llh) - (n_params / 2) * np.log(self.T * self.B)
 
         return bic

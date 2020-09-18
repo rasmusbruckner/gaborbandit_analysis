@@ -5,8 +5,6 @@ from time import sleep
 from tqdm import tqdm
 
 
-# todo: testen ob man callback x rausnehmen kann
-
 def parallelest(exp_data, est_vars, **kwargs):
     """ This function implements the parallel parameter estimation
 

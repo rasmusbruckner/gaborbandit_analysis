@@ -16,12 +16,14 @@ def gb_simulation(n_trials, n_blocks, sigma, agent, beta, task_agent_analysis=Fa
     :param sigma: Perceptual sensitivity
     :param agent: Agent-based computational model
     :param beta: Inverse temperature parameter
-    :param task_agent_analysis: Indicates if use for data analysis or not (todo: wird das überhaupt mit true benutzt?)
+    :param task_agent_analysis: Indicates if use for data analysis or not
+    :param eval_ana: Evaluate agent analytically
     :return: df_subj: Data frame containing simulated data
     """
-   # np.random.seed(123)
+
     # Parameter definition
     # --------------------
+
     # Task parameters in GbTaskVars.py object
     task_vars = TaskVars()
     task_vars.T = n_trials
@@ -36,10 +38,9 @@ def gb_simulation(n_trials, n_blocks, sigma, agent, beta, task_agent_analysis=Fa
     agent_vars.kappa = task_vars.kappa 
     agent_vars.agent = agent
     agent_vars.lambda_param = np.nan
-    agent_vars.task_agent_analysis = task_agent_analysis  # todo: auch direkt beim callen?
-
-    ## todo: achtung!!! nur zum testen ausgestellt!
+    agent_vars.task_agent_analysis = task_agent_analysis
     agent_vars.eval_ana = eval_ana
+
     # Simulation parameters in GbSimVars.py object
     sim_vars = SimVars()
 

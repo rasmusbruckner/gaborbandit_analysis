@@ -14,7 +14,7 @@ def recovsim(task_vars, sim_vars, exp_data, **kwargs):
     :param sim_vars: Variables to initialize the simulation object
     :param exp_data: Experimental data
     :param kwargs: Optionally; participant parameters
-    :return: df_recov: Data frame with simulated data
+    :return: df_recov: Data-frame with simulated data
     """
 
     # Extract the optionally provided parameters
@@ -36,10 +36,11 @@ def recovsim(task_vars, sim_vars, exp_data, **kwargs):
     # Initialize array that indicates the ID of data set used for simulations
     which_id = np.full(len(opt_params), np.nan)
 
+    # Cycle over parameters
     for m in range(0, len(opt_params)):
 
         # Randomly determine current data set
-        which_id[m] = randint(0, sim_vars.N)
+        which_id[m] = randint(0, sim_vars.N-1)
 
         # For experiment 2 and 3 we additionally use participant parameters
         if task_vars.experiment == 2:
@@ -91,7 +92,8 @@ def recovsim(task_vars, sim_vars, exp_data, **kwargs):
 
     if task_vars.experiment == 2 or task_vars.experiment == 3:
 
-        # Todo: am Ende mit allem konsistent machen!
+        # Check if this is consistent across scripts
+        # This could be adjusted at the global level
         df_recov = df_recov.rename(index=str, columns={"corr": "decision2.corr"})
         df_recov['a_t'] = df_recov['a_t'] + 1
 

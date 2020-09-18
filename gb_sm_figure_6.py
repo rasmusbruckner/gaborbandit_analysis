@@ -1,4 +1,11 @@
-# This script plots Figure SM 7
+""" This script plots Figure SM 5
+
+    1. Prepare figure
+    2. Example 1: Strong negative contrast difference
+    3. Example 2: Weak negative contrast difference
+    4. Example 3: Zero contrast difference
+    5. Add subplot labels and save figure
+"""
 
 from scipy import stats
 import matplotlib
@@ -14,6 +21,10 @@ os.environ["PATH"] += os.pathsep + '/usr/local/texlive/2016/bin/x86_64-darwin'
 matplotlib = latex_plt(matplotlib)
 # Activate latex
 rc('text', usetex=True)
+
+# -----------------
+# 1. Prepare figure
+# -----------------
 
 # Figure properties
 fig_width = 15
@@ -33,7 +44,10 @@ ax_5 = plt.subplot2grid((2, 3), (1, 2), colspan=1, rowspan=1)
 # Range of observations
 U = np.linspace(-0.15, 0.15, 100)
 
-# Example 1: Strong negative contrast difference
+# -------------------------------------------------
+# 2. Example 1: Strong negative contrast difference
+# -------------------------------------------------
+
 mu = -0.1
 sigma = 0.02
 p_o_giv_u = stats.norm.pdf(U, mu, sigma)
@@ -49,7 +63,10 @@ ax_3.set_xlabel(r'$d_t$')
 ax_3.set_xticks([0, 1])
 ax_3.set_xticks([0, 1])
 
-# Example 2: Weak negative contrast difference
+# -----------------------------------------------
+# 3. Example 2: Weak negative contrast difference
+# -----------------------------------------------
+
 mu = -0.01
 sigma = 0.02
 p_o_giv_u = stats.norm.pdf(U, mu, sigma)
@@ -63,7 +80,10 @@ ax_4.set_ylim([0, 1])
 ax_4.set_ylabel(r'$p(d_t|c_t=-0.01)$')
 ax_4.set_xlabel(r'$d_t$')
 
-# Example 3: Zero contrast difference
+# --------------------------------------
+# 4. Example 3: Zero contrast difference
+# --------------------------------------
+
 mu = 0
 sigma = 0.02
 p_o_giv_u = stats.norm.pdf(U, mu, sigma)
@@ -79,6 +99,10 @@ ax_5.set_ylabel(r'$p(d_t|c_t=0)$')
 ax_5.set_xticks([0, 1])
 sns.despine()
 
+# -------------------------------------
+# 5. Add subplot labels and save figure
+# -------------------------------------
+
 # Adjust plot properties
 plt.subplots_adjust(hspace=0.4, wspace=0.5)
 
@@ -89,7 +113,8 @@ texts = ['a', 'b', 'c', 'd', 'e', 'f']
 label_subplots(f, texts)
 
 # Save figure
-plt.savefig('gb_figures/gb_sm_figure_7.pdf', dpi=400, transparent=True)
+savename = 'gb_figures/gb_sm_figure_6.pdf'
+plt.savefig(savename, dpi=400, transparent=True)
 
 # Show plot
 plt.show()

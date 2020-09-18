@@ -49,9 +49,9 @@ def run_postpred(sub_params, exp3_data, agent_vars, task_vars, sim_vars, sim_age
                 counter = counter + 1
 
                 # Select current participant parameters
-                agent_vars.sigma = sub_params['sigma_exp3'][s]
+                agent_vars.sigma = sub_params['sigma'][s]
 
-                # Select agent dependent parameters
+                # Select agent-dependent parameters
                 if sim_agents[a] == 0:
                     agent_vars.beta = np.nan
                     agent_vars.alpha = np.nan
@@ -126,12 +126,10 @@ def run_postpred(sub_params, exp3_data, agent_vars, task_vars, sim_vars, sim_age
     # Close progress bar
     pbar.close()
 
+    # Save data
     if sim_vars.post_pred:
-        # Save data
-        # f = open('gb_data/postpred_april_beta.pkl', 'wb')
-        f = open('gb_data/postpred_final.pkl', 'wb')
-        # f = open('gb_data/predictions.pkl', 'wb')
+        f = open('gb_data/postpred.pkl', 'wb')
     else:
-        f = open('gb_data/predictions_final.pkl', 'wb')
+        f = open('gb_data/predictions.pkl', 'wb')
     pickle.dump(mean_corr, f)
     f.close()

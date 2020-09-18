@@ -8,8 +8,6 @@
     6. Plot block example
     7. Plot performance
     8. Add subplot labels and save figure
-    9. SM Figure 2: Single participant performances
-
 """
 
 import numpy as np
@@ -24,12 +22,6 @@ import os
 from latex_plt import latex_plt
 from gb_plot_utils import cm2inch, plot_image, plot_arrow, label_subplots, plot_centered_text
 
-# TODO: checken
-# gb_preprocessing (bis auf finale BIDS Kontrolle)
-# gb_loaddata (done)
-# gb_compute_misses todo: überprüfen ob sich das mit anderen funktionen überschneidet
-# SM figure 2 comments zufügen (done)
-
 # Update matplotlib to use Latex and to change some defaults
 os.environ["PATH"] += os.pathsep + '/usr/local/texlive/2016/bin/x86_64-darwin'
 matplotlib = latex_plt(matplotlib)
@@ -39,9 +31,9 @@ matplotlib = latex_plt(matplotlib)
 # ------------------------------------
 
 # Load preprocessed data of all experiments
-exp1_data = pd.read_pickle('gb_data/gb_exp1_data_final.pkl')
-exp2_data = pd.read_pickle('gb_data/gb_exp2_data_final.pkl')
-exp3_data = pd.read_pickle('gb_data/gb_exp3_data_final.pkl')
+exp1_data = pd.read_pickle('gb_data/gb_exp1_data.pkl')
+exp2_data = pd.read_pickle('gb_data/gb_exp2_data.pkl')
+exp3_data = pd.read_pickle('gb_data/gb_exp3_data.pkl')
 
 # Get all IDs
 all_id = list(set(exp1_data['participant']))
@@ -191,7 +183,7 @@ ax_1 = plt.Subplot(f, gs01[:])
 f.add_subplot(ax_1)
 
 # Define schematic coordinates
-left_bound = 0.17
+left_bound = 0.25
 right_bound = 1
 cell_width = right_bound - left_bound
 center = left_bound + (cell_width / 2.0)
@@ -202,43 +194,48 @@ right_center = right_bound - (cell_width / 4.0)
 # ----------------
 
 # Left bound and states
-ax_1.axvline(ymin=0, ymax=1, x=left_bound, color='k', linewidth=0.5)
+ax_1.axvline(ymin=0, ymax=1, x=0.17, color='k', linewidth=0.5)
 plot_centered_text(f, ax_1, left_bound, 0.98, center, 0.98, 'State 0', fontsize)
 plot_centered_text(f, ax_1, center, 0.98, right_bound, 0.98, 'State 1', fontsize)
 
 # Stage 1
 cell_y0 = 0.6
 cell_y1 = 0.9
-ax_1, word_length, word_height, bbox = plot_centered_text(f, ax_1, -0.1, cell_y0, left_bound, cell_y1,
+ax_1, word_length, word_height, bbox = plot_centered_text(f, ax_1, -0.02, cell_y0, left_bound, cell_y1,
                                                           'Stage 1:\nPerceptual\ndecision', fontsize, c_type="y")
 text_height = bbox.y1 - bbox.y0
 plot_centered_text(f, ax_1, left_bound, cell_y0, center, cell_y1, 'Left stronger', fontsize)
 plot_centered_text(f, ax_1, center, cell_y0, right_bound, cell_y1, 'Right stronger', fontsize)
 
 # Stage 2 and 3
-center_bias = 0.05  # shifts images toward center
+center_bias = 0.035  # shifts images toward center
 text_post = 'centered_below'  # put text below image
-text_y_dist = 0.26  # distance to lower bound of image
-cell_y0 = 0.3  # lpper position of image area
+text_y_dist = 0.35  # distance to lower bound of image
+cell_y0 = 0.3  # lower position of image area
 cell_y1 = 0.6  # upper position of image area
-_, _, _, bbox = plot_centered_text(f, ax_1, -0.1, cell_y0, left_bound, cell_y1, 'Stage 2:\nEconomic\ndecision',
+_, _, _, bbox = plot_centered_text(f, ax_1, -0.02, cell_y0, left_bound, cell_y1, 'Stage 2:\nEconomic\ndecision',
                                    fontsize, c_type="y")
-plot_centered_text(f, ax_1, -0.1, 0.0, left_bound, cell_y0, 'Stage 3:\nReward', fontsize, c_type="y")
+plot_centered_text(f, ax_1, -0.02, 0.0, left_bound, cell_y0, 'Stage 3:\nReward', fontsize, c_type="y")
+plot_centered_text(f, ax_1, 0.2, 0.12, left_bound, cell_y0, r'$\mu$', fontsize, c_type="y")
+plot_centered_text(f, ax_1, 0.264, 0.14, left_bound, cell_y0, '=0.8:', fontsize, c_type="y")
+plot_centered_text(f, ax_1, 0.2, -0.19, left_bound, cell_y0, r'$\mu$', fontsize, c_type="y")  #-0.175
+plot_centered_text(f, ax_1, 0.264, -0.17, left_bound, cell_y0, '=0.2:', fontsize, c_type="y")
+
 ax_1, bbox_image = plot_image(f, 'gb_figures/red_fractal.png', left_bound+center_bias, left_center+center_bias,
-                              cell_y0, ax_1, text_y_dist, '80%', text_pos, fontsize, cell_y1=cell_y1)
+                              cell_y0, ax_1, text_y_dist, '80%\n\n20%', text_pos, fontsize, cell_y1=cell_y1)
 plot_image(f, 'gb_figures/blue_fractal.png', left_center-center_bias, center-center_bias,
-           cell_y0, ax_1, text_y_dist, '20%', text_pos, fontsize, cell_y1=cell_y1)
+           cell_y0, ax_1, text_y_dist, '20%\n\n80%', text_pos, fontsize, cell_y1=cell_y1)
 plot_image(f, 'gb_figures/red_fractal.png', center+center_bias, right_center+center_bias,
-           cell_y0, ax_1, text_y_dist, '20%', text_pos, fontsize, cell_y1=cell_y1)
+           cell_y0, ax_1, text_y_dist, '20%\n\n80%', text_pos, fontsize, cell_y1=cell_y1)
 plot_image(f, 'gb_figures/blue_fractal.png', right_bound-center_bias, right_center-center_bias,
-           cell_y0, ax_1, text_y_dist, '80%', text_pos, fontsize, cell_y1=cell_y1)
+           cell_y0, ax_1, text_y_dist, '80%\n\n20%', text_pos, fontsize, cell_y1=cell_y1)
 
 # Arrows
 image_height = bbox_image.y1 - bbox_image.y0
 image_center = bbox_image.y0 + image_height / 2.0
 plot_arrow(ax_1, center, 0.95, center, bbox_image.y1)
 plot_arrow(ax_1, center, bbox_image.y0, center, 0.2)
-plot_arrow(ax_1, 0.1, image_center, 0.25, image_center)
+plot_arrow(ax_1, 0.12, image_center, 0.3, image_center)
 ax_1.axis('off')
 
 # ---------------------
@@ -333,7 +330,7 @@ barlist = ax_8.bar([1, 2], perc_mean_fig1, yerr=perc_sem_fig1, alpha=1, edgecolo
 barlist[0].set_facecolor('#eeeeee')
 barlist[1].set_facecolor('#eeeeee')
 
-ax_8.set_ylabel('Perceptual choice\nperformance')
+ax_8.set_ylabel('Perceptual-choice\nperformance')
 ax_8.set_xticks([1, 2])
 ax_8.set_xticklabels(['GB', 'Cont'])
 ax_8.set_ylim([0.5, 1])
@@ -347,7 +344,7 @@ barlist[1].set_facecolor('#eeeeee')
 ax_9.set_ylim([0.5, 0.9])
 ax_9.set_xticks([1, 2])
 ax_9.set_xticklabels(['GB', 'Cont'])
-ax_9.set_ylabel('Economic choice\nperformance')
+ax_9.set_ylabel('Economic-choice\nperformance')
 ax_9.set_xlabel(r'Condition')
 
 # Psychometric function
@@ -386,6 +383,8 @@ ax_10.fill_between(x, d_t_binned_mean-d_t_binned_sem, d_t_binned_mean+d_t_binned
 ax_10.set_ylabel('Frequency\nchoice right')
 ax_10.set_xlabel('Contrast difference')
 ax_10.set_ylim([0, 1])
+plot_centered_text(f, ax_10, -0.08, -0.65, left_bound, cell_y0, 'Left', fontsize, c_type="y")
+plot_centered_text(f, ax_10, 0.075, -0.65, left_bound, cell_y0, 'Right', fontsize, c_type="y")
 
 # Economic decision making performance across trials
 # --------------------------------------------------
@@ -407,7 +406,7 @@ ax_7.fill_between(x, exp3_trial_mean-exp3_trial_sem, exp3_trial_mean+exp3_trial_
 ax_7.set_xlabel(r'Trial')
 ax_7.set_ylim([0.4, 1])
 ax_7.legend(["Cont", "Exp"], loc=(0.7, 0.1))
-ax_7.set_ylabel('Economic choice\nperformance')
+ax_7.set_ylabel('Economic-choice\nperformance')
 
 # Delete unnecessary axes
 sns.despine()
@@ -425,98 +424,5 @@ label_subplots(f, texts)
 # Save plot
 savename = 'gb_figures/gb_figure_1.pdf'
 plt.savefig(savename, dpi=400)
-
-# --------------
-# 9. SM Figure 2
-# --------------
-
-# Mean perceptual decision making performance
-exp1_perc_part = exp1_data.groupby(['participant'])['decision1.corr'].mean()
-exp1_perc_mean = np.mean(exp1_perc_part)
-exp1_perc_sd = np.std(exp1_perc_part)
-exp1_perc_sem = exp1_perc_sd/np.sqrt(n_subj)
-
-# Figure properties
-fig_ratio = 0.65
-fig_witdh = 15
-linewidth = 1
-markersize = 2
-fontsize = 6
-
-# Create figure
-f = plt.figure(figsize=cm2inch(fig_witdh, fig_ratio * fig_witdh))
-
-# Prepare figure
-ax_1 = plt.subplot2grid((3, 2), (0, 0))
-ax_2 = plt.subplot2grid((3, 2), (1, 0))
-ax_3 = plt.subplot2grid((3, 2), (2, 0))
-ax_4 = plt.subplot2grid((3, 2), (1, 1))
-ax_5 = plt.subplot2grid((3, 2), (2, 1))
-
-# Experiment 1
-# ------------
-# Mean perceptual decision making performance
-ax_1.bar(np.arange(len(all_id)), exp3_perc_part, color='k', alpha=0.2)
-ax_1.axhline(exp1_perc_mean, color='black', lw=0.5, linestyle='--')
-ax_1.set_ylim([0.5, 1])
-ax_1.set_title('PDM')
-ax_1.set_xlabel('Participant')
-ax_1.set_ylabel('Perceptual Choice\nPerformance')
-
-# Experiment 2
-# ------------
-# Mean perceptual decision making performance
-ax_2.bar(np.arange(len(all_id)), exp2_perc_part, color='k', alpha=0.2)
-ax_2.axhline(exp2_perc_mean, color='black', lw=0.5, linestyle='--')
-ax_2.set_ylim([0.5, 1])
-ax_2.set_title('Cont')
-ax_2.set_xlabel('Participant')
-ax_2.set_ylabel('Perceptual Choice\nPerformance')
-
-# Mean economic decision making performance
-ax_4.bar(np.arange(len(all_id)), exp2_econ_part, color='k', alpha=0.2)
-ax_4.axhline(exp2_econ_mean, color='black', lw=0.5, linestyle='--')
-ax_4.set_ylim([0.5, 1])
-ax_4.set_title('Cont')
-ax_4.set_ylabel('Economic Choice\nPerformance')
-ax_4.set_xlabel('Participant')
-
-# Experiment 3
-# ------------
-# Mean perceptual decision making performance
-ax_3.bar(np.arange(len(all_id)), exp3_perc_part, color='k', alpha=0.2)
-ax_3.axhline(exp3_perc_mean, color='black', lw=0.5, linestyle='--')
-ax_3.set_ylim([0.5, 1])
-ax_3.set_title('GB')
-ax_3.set_xlabel('Participant')
-ax_3.set_ylabel('Perceptual Choice\nPerformance')
-
-# Mean economic decision making performance
-ax_5.bar(np.arange(len(all_id)), exp3_econ_part, color='k', alpha=0.2)
-ax_5.axhline(exp3_econ_mean, color='black', lw=0.5, linestyle='--')
-ax_5.set_ylim([0.5, 1])
-ax_5.set_title('GB')
-ax_5.set_ylabel('Economic Choice\nPerformance')
-ax_5.set_xlabel('Participant')
-
-# Adjust figure space
-plt.subplots_adjust(top=0.95, bottom=0.05, left=0.10, right=0.9, hspace=0.5, wspace=0.35)
-sns.despine()
-
-# Adjust figure space
-plt.subplots_adjust(top=0.95, bottom=0.05, left=0.10, right=0.9, hspace=0.5, wspace=0.35)
-
-# Save figure
-# -----------
-
-# Label letters
-texts = ['a', 'b', 'd', 'c', 'e']
-
-# Add labels
-label_subplots(f, texts)
-
-savename = 'gb_figures/gb_sm_figure_2.pdf'
-plt.savefig(savename)
-
 
 plt.show()

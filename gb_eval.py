@@ -5,14 +5,13 @@ from tqdm import tqdm
 from time import sleep
 
 
-# todo: checken was eval_simulations macht wenn false, bzw. wo das genau benutzt wird...
 def evalfun(exp_data, est_vars, sub_params, eval_simulations=False, save_plot=0):
     """ This function evaluates the agent-based computational models
 
     :param exp_data: Data frame that contains current data set
     :param est_vars: Estimation variables
     :param sub_params: Participant parameters
-    :param eval_simulations: Indicate if agent A3 should be evaluated or not
+    :param eval_simulations: Indicate if agents should be evaluated or not
     :param save_plot: Indicate if plot should be saved
     :return: df_bic: Data frame containing BICs
     """
@@ -23,8 +22,6 @@ def evalfun(exp_data, est_vars, sub_params, eval_simulations=False, save_plot=0)
     # Indicate that we only evaluate models
     est_params = 0
 
-    # todo: hier aufpassen, dass ich das bei recovery etc wieder anstelle!
-    # todo: wo ist das denn eigentlich false?
     if eval_simulations:
 
         # Initialize progress bar
@@ -44,7 +41,7 @@ def evalfun(exp_data, est_vars, sub_params, eval_simulations=False, save_plot=0)
     bic_a5 = list()
     bic_a6 = list()
 
-    # Cycle over
+    # Cycle over participants
     for i in range(0, len(sub_params)):
 
         # Agent A0
@@ -101,6 +98,7 @@ def evalfun(exp_data, est_vars, sub_params, eval_simulations=False, save_plot=0)
             pbar.update(1)
 
     if eval_simulations:
+
         # Close progress bar
         pbar.close()
 

@@ -1,6 +1,6 @@
 import numpy as np
 
-# todo: überprüfen, ob ich das noch genereller für andere means sterrors etc. nutzen kann oder sowas schon haben
+# check if this can be part of gb_utilities
 
 
 def compute_misses(n_misses, n_subj):

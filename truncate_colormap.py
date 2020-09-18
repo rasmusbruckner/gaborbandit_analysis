@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.colors as colors
 
+# Todo: add to plot_utils
+
 
 def truncate_colormap(colmap, minval=0.0, maxval=1.0, n=100):
     """ This function truncates a colormap

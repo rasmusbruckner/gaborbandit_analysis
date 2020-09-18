@@ -7,6 +7,7 @@
 
 import numpy as np
 import pandas as pd
+import random as random
 from GbTaskVars import TaskVars
 from GbSimVars import SimVars
 from GbEstVars import EstVars
@@ -15,21 +16,15 @@ from gb_recovsim import recovsim
 from gb_eval import evalfun
 
 
-# todo: take_pd nochmal in code checken, eventuell wegmachen, wo soll man das für gebrauchen?
-# model evaluation basierend auf LL und nicht BIC sonst geht pEP nicht -- aber schauen, dass free Params = 0!
-# überprüfen, ob ll genau gleich ist!
-# überprüfen, ob model_params nicht durch eval_params geändert wird. habe jetzt copy() eingebaut, muss
-# aber verifiziert werden
-
 # Set random number generator for reproducible results
-np.random.seed(123)
+random.seed(123)
 
 # ----------------------------------------
 # 1. Load data and set recovery parameters
 # ----------------------------------------
 
 # Load preprocessed data
-exp3_data = pd.read_pickle('gb_data/gb_exp3_data.pkl')
+exp3_data = pd.read_pickle('gb_data/gb_exp3_data_final.pkl')
 
 # Create data frame with sigma, beta, lambda and alpha values that are used in model and parameter recovery
 sim_params = pd.DataFrame()
@@ -67,77 +62,56 @@ sim_vars.N = N
 
 # Estimation parameters
 est_vars = EstVars(task_vars)
-
-# todo: was kommt hiervon in parameter recovery?
-# est_vars.n_ker = 4
-# est_vars.n_sp = 10
-# est_vars.rand_sp = True
-est_vars.real_data = False  # todo: das nochmal kontrollieren!
+est_vars.real_data = False
 
 # Agent A0
 # ---------
 sim_vars.agent = 0
 df_subj = recovsim(task_vars, sim_vars, exp3_data, opt_params=model_params)  # generate data for model recovery
 df_bic_0 = evalfun(df_subj, est_vars, eval_params, eval_simulations=True, save_plot=True)  # evaluate all models
-# df_bic_0.to_pickle('gb_data/df_bic_0.pkl')
-# df_bic_0.to_pickle('gb_data/df_bic_0_new.pkl')
-df_bic_0.to_pickle('gb_data/df_bic_0_final.pkl')  # save data
+df_bic_0.to_pickle('gb_data/df_bic_0.pkl')
 
 # Agent A1
 # ---------
 sim_vars.agent = 1
 df_subj = recovsim(task_vars, sim_vars, exp3_data, opt_params=model_params)  # generate data for model recovery
 df_bic_1 = evalfun(df_subj, est_vars, eval_params, eval_simulations=True, save_plot=True)  # evaluate all models
-# df_bic_1.to_pickle('gb_data/df_bic_1.pkl')
-# df_bic_1.to_pickle('gb_data/df_bic_1_new.pkl')
-df_bic_1.to_pickle('gb_data/df_bic_1_final.pkl')  # save data
+df_bic_1.to_pickle('gb_data/df_bic_1.pkl')
 
 # Agent A2
 # ---------
 sim_vars.agent = 2
 df_subj = recovsim(task_vars, sim_vars, exp3_data, opt_params=model_params)  # generate data for model recovery
 df_bic_2 = evalfun(df_subj, est_vars, eval_params, eval_simulations=True, save_plot=True)  # evaluate all models
-# df_bic_2.to_pickle('gb_data/df_bic_2.pkl')
-# df_bic_2.to_pickle('gb_data/df_bic_2_new.pkl')
-df_bic_2.to_pickle('gb_data/df_bic_2_final.pkl')  # save data
+df_bic_2.to_pickle('gb_data/df_bic_2.pkl')
 
 # Agent A3
 # ---------
 sim_vars.agent = 3
 df_subj = recovsim(task_vars, sim_vars, exp3_data, opt_params=model_params)  # generate data for model recovery
 df_bic_3 = evalfun(df_subj, est_vars, eval_params, eval_simulations=True, save_plot=True)  # evaluate all models
-# df_bic_3.to_pickle('gb_data/df_bic_3.pkl')
-# df_bic_3.to_pickle('gb_data/df_bic_3_new.pkl')
-df_bic_3.to_pickle('gb_data/df_bic_3_final.pkl')  # save data
+df_bic_3.to_pickle('gb_data/df_bic_3.pkl')
 
 # Agent A4
 # ---------
 sim_vars.agent = 4
 df_subj = recovsim(task_vars, sim_vars, exp3_data, opt_params=model_params)  # generate data for model recovery
 df_bic_4 = evalfun(df_subj, est_vars, eval_params, eval_simulations=True, save_plot=True)  # evaluate all models
-# df_bic_4.to_pickle('gb_data/df_bic_4.pkl')
-# df_bic_4.to_pickle('gb_data/df_bic_4_new.pkl')
-df_bic_4.to_pickle('gb_data/df_bic_4_final.pkl')  # save data
-
+df_bic_4.to_pickle('gb_data/df_bic_4.pkl')
 
 # Agent A5
 # ---------
 sim_vars.agent = 5
 df_subj = recovsim(task_vars, sim_vars, exp3_data, opt_params=model_params)  # generate data for model recovery
 df_bic_5 = evalfun(df_subj, est_vars, eval_params, eval_simulations=True, save_plot=True)  # evaluate all models
-# df_bic_5.to_pickle('gb_data/df_bic_5.pkl')
-# df_bic_5.to_pickle('gb_data/df_bic_5_new.pkl')
-df_bic_5.to_pickle('gb_data/df_bic_5_final.pkl')  # save data
-
+df_bic_5.to_pickle('gb_data/df_bic_5.pkl')
 
 # Agent A6
 # ---------
 sim_vars.agent = 6
 df_subj = recovsim(task_vars, sim_vars, exp3_data, opt_params=model_params)  # generate data for model recovery
 df_bic_6 = evalfun(df_subj, est_vars, eval_params, eval_simulations=True, save_plot=True)  # evaluate all models
-# df_bic_6.to_pickle('gb_data/df_bic_6.pkl')
-# df_bic_6.to_pickle('gb_data/df_bic_6_new.pkl')
-df_bic_6.to_pickle('gb_data/df_bic_6_final.pkl')  # save data
+df_bic_6.to_pickle('gb_data/df_bic_6.pkl')
 
 # Save BIC as csv for Bayesian model comparison in Matlab
 # -------------------------------------------------------
@@ -199,11 +173,7 @@ recov_bic_mat[:, 46] = df_bic_6[df_bic_6['agent'] == 4]['d_BIC'] + df_bic_6[df_b
 recov_bic_mat[:, 47] = df_bic_6[df_bic_6['agent'] == 5]['d_BIC'] + df_bic_6[df_bic_6['agent'] == 5]['a_BIC']
 recov_bic_mat[:, 48] = df_bic_6[df_bic_6['agent'] == 6]['d_BIC'] + df_bic_6[df_bic_6['agent'] == 6]['a_BIC']
 
-# np.savetxt('gb_data/recov_bic_mat_new.csv', recov_bic_mat, delimiter=',')
-# np.savetxt('gb_data/recov_bic_mat.csv', recov_bic_mat, delimiter=',')
-# todo: achtung, kontrollieren, ob "frecov_bic_mat" funktioniert
-# np.savetxt('gb_data/recov_bic_mat_final.csv', recov_bic_mat, delimiter=',')  # save data
-np.savetxt('gb_data/recov_bic_mat_final.csv', f=recov_bic_mat, delimiter=',')  # save data
+np.savetxt('gb_data/recov_bic_mat.csv', recov_bic_mat, delimiter=',')  # save data
 
 # -------------------------------
 # 2. Run parameter recovery study
@@ -227,9 +197,7 @@ recov_params_sigma = pd.DataFrame(index=range(0, len(model_params)), dtype='floa
 recov_params_sigma.loc[:, 'which_param_sigma'] = model_params['sigma']
 recov_params_sigma.loc[:, 'sigma'] = results_df['minimum'].copy()
 recov_params_sigma.loc[:, 'sigma_bias'] = results_df['minimum'] - model_params['sigma']
-# recov_params.to_pickle('gb_data/param_recov_new_sigma.pkl')
-recov_params_sigma.to_pickle('gb_data/param_recov_final_sigma.pkl')
-
+recov_params_sigma.to_pickle('gb_data/param_recov_sigma.pkl')
 
 # Agent A1
 # --------
@@ -243,8 +211,7 @@ recov_params_a1 = pd.DataFrame(index=range(0, len(model_params)), dtype='float')
 recov_params_a1.loc[:, 'which_param_beta'] = model_params['beta_A1']
 recov_params_a1.loc[:, 'beta'] = results_df['minimum_beta'].copy()
 recov_params_a1.loc[:, 'beta_bias'] = results_df['minimum_beta'] - model_params['beta_A1']
-# recov_params.to_pickle('gb_data/param_recov_new_1.pkl')
-recov_params_a1.to_pickle('gb_data/param_recov_final_1.pkl')
+recov_params_a1.to_pickle('gb_data/param_recov_1.pkl')
 
 # Agent A2
 # --------
@@ -257,9 +224,7 @@ recov_params_a2 = pd.DataFrame(index=range(0, len(model_params)), dtype='float')
 recov_params_a2.loc[:, 'which_param_beta'] = model_params['beta_A2']
 recov_params_a2.loc[:, 'beta'] = results_df['minimum_beta'].copy()
 recov_params_a2.loc[:, 'beta_bias'] = results_df['minimum_beta'] - model_params['beta_A2']
-# recov_params.to_pickle('gb_data/param_recov_new_2.pkl')
-recov_params_a2.to_pickle('gb_data/param_recov_final_2.pkl')
-
+recov_params_a2.to_pickle('gb_data/param_recov_2.pkl')
 
 # Agent A3
 # --------
@@ -275,8 +240,7 @@ recov_params_a3.loc[:, 'lambda'] = results_df['minimum_lambda'].copy()
 recov_params_a3.loc[:, 'beta'] = results_df['minimum_beta'].copy()
 recov_params_a3.loc[:, 'lambda_bias'] = results_df['minimum_lambda'] - model_params['lambda_A3']
 recov_params_a3.loc[:, 'beta_bias'] = results_df['minimum_beta'] - model_params['beta_A3']
-# recov_params.to_pickle('gb_data/param_recov_new_3.pkl')
-recov_params_a3.to_pickle('gb_data/param_recov_final_3.pkl')
+recov_params_a3.to_pickle('gb_data/param_recov_3.pkl')
 
 # Agent A4
 # ---------
@@ -292,8 +256,7 @@ recov_params_a4.loc[:, 'beta'] = results_df['minimum_beta'].copy()
 recov_params_a4.loc[:, 'alpha'] = results_df['minimum_alpha'].copy()
 recov_params_a4.loc[:, 'beta_bias'] = results_df['minimum_beta'] - model_params['beta_A4']
 recov_params_a4.loc[:, 'alpha_bias'] = results_df['minimum_alpha'] - model_params['alpha_A4']
-# recov_params.to_pickle('gb_data/param_recov_new_4.pkl')
-recov_params_a4.to_pickle('gb_data/param_recov_final_4.pkl')
+recov_params_a4.to_pickle('gb_data/param_recov_4.pkl')
 
 # Agent A5
 # --------
@@ -309,8 +272,7 @@ recov_params.loc[:, 'beta'] = results_df['minimum_beta'].copy()
 recov_params.loc[:, 'alpha'] = results_df['minimum_alpha'].copy()
 recov_params.loc[:, 'beta_bias'] = results_df['minimum_beta'] - model_params['beta_A5']
 recov_params.loc[:, 'alpha_bias'] = results_df['minimum_alpha'] - model_params['alpha_A5']
-recov_params.to_pickle('gb_data/param_recov_final_5.pkl')
-# recov_params.to_pickle('gb_data/param_recov_new_5.pkl')
+recov_params.to_pickle('gb_data/param_recov_5.pkl')
 
 # Agent A6
 # ---------
@@ -329,5 +291,4 @@ recov_params_a6.loc[:, 'alpha'] = results_df['minimum_alpha'].copy()
 recov_params_a6.loc[:, 'lambda_bias'] = results_df['minimum_lambda'] - model_params['lambda_A6']
 recov_params_a6.loc[:, 'beta_bias'] = results_df['minimum_beta'] - model_params['beta_A6']
 recov_params_a6.loc[:, 'alpha_bias'] = results_df['minimum_alpha'] - model_params['alpha_A6']
-# recov_params.to_pickle('gb_data/param_recov_new_6.pkl')
-recov_params_a6.to_pickle('gb_data/param_recov_final_6.pkl')
+recov_params_a6.to_pickle('gb_data/param_recov_6.pkl')

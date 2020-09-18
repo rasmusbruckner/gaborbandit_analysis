@@ -4,41 +4,11 @@ import scipy.stats as stats
 import warnings
 
 
-# todo: reset_index() anstatt andere lösung!  --> https://cmdlinetips.com/2018/04/how-to-reset-index-in-pandas-dataframe/
-
 class Agent:
-    # This class specifies the instance variables and methods of the Agent object that models A0 - A4
+    # This class specifies the instance variables and methods of the Agent object that models A0 - A6
 
     def __init__(self, agent_vars):
         """ This function defines the instance variable unique to each instance
-
-             All attributes of agent_vars object
-             set_o: Discrete set of observations
-             o_t: Current observation
-             d_t: Current perceptual decision
-             a_t: Current economic decision
-             r_t: Current reward
-             pi_0: Belief state in favor of s_t = 0: p(s_t = 0|o_t)
-             pi_1: Belief state in favor of s_t = 1: p(s_t = 1|o_t)
-             pi_t: Vector containing both state probabilities
-             E_mu_t: Expected value
-             v_a_0: Valence a_t = 0
-             v_a_1: Valence a_t = 1
-             v_a_t: Vector containing both valences
-             v_a_t_A1: Vector containing both valences of A1
-             v_a_t_A2: Vector containing both valences of A2
-             p_a_t: Vector containing choice probabilites
-             p_a_t_A1: Vector containing choice probabilites of A1
-             p_a_t_A2: Vector containing choice probabilites of A2
-             t: Degree of polynomial
-             p_o_giv_u: Probabilities of observations given contrast differences
-             p_o_giv_u_norm: Normalized probabilities of observations given contrast differences
-             C: Polynomial coefficients
-             q_0: Fraction for polynomial update
-             q_1: Fraction for polynomial update
-             d: Temporary, trial-specific polynomial coefficients
-             G: Gamma factor
-             
 
         :param agent_vars: Object with agent parameters
         """
@@ -54,43 +24,41 @@ class Agent:
         self.eval_ana = agent_vars.eval_ana
         self.alpha = agent_vars.alpha
         self.task_agent_analysis = agent_vars.task_agent_analysis
+        self.q_0_0 = agent_vars.q_0_0
 
         # Initialize other instance variables
-        self.o_t = np.nan
-        self.d_t = np.nan
-        self.a_t = np.nan
-        self.r_t = np.nan
-        self.pi_0 = np.nan
-        self.pi_1 = np.nan
-        self.E_mu_t = 0.5
-        self.q_0_0 = agent_vars.q_0_0
-        self.v_a_t = np.nan
-        self.v_a_t_A1 = np.full(2, np.nan)
-        self.v_a_t_A2 = np.full(2, np.nan)
-        self.v_a_0 = np.nan
-        self.v_a_1 = np.nan
-        self.p_a_t = np.nan
-        self.p_a_t_A1 = np.full(2, np.nan)
-        self.p_a_t_A2 = np.full(2, np.nan)
-        self.t = np.nan
-        self.p_o_giv_u = np.full(len(self.set_o), 0.0)
-        self.p_o_giv_u_norm = np.full(len(self.set_o), 0.0)
-        self.C = np.nan
-        self.q_0 = np.nan
-        self.q_1 = np.nan
-        self.d = np.nan
-        self.G = np.nan
-        self.p_d_t = [np.nan, np.nan]
+        self.o_t = np.nan  # current observation
+        self.d_t = np.nan  # current perceptual decision
+        self.a_t = np.nan  # current economic decision
+        self.r_t = np.nan  # current reward
+        self.pi_0 = np.nan  # belief state in favor of s_t = 0: p(s_t = 0|o_t)
+        self.pi_1 = np.nan  # belief state in favor of s_t = 1: p(s_t = 1|o_t)
+        self.E_mu_t = 0.5  # expected value
+        self.v_a_0 = np.nan  # valence a_t = 0
+        self.v_a_1 = np.nan  # valence a_t = 1
+        self.v_a_t = np.nan  # vector containing both valences
+        self.p_a_t = np.nan  # vector containing choice probabilites
+        self.t = np.nan  # degree of polynomial
+        self.p_o_giv_u = np.full(len(self.set_o), 0.0)  # probabilities of observations given contrast differences
+        self.p_o_giv_u_norm = np.full(len(self.set_o), 0.0)  # normalized probabilities of observations
+        self.C = np.nan  # polynomial coefficients
+        self.q_0 = np.nan  # fraction for polynomial update
+        self.q_1 = np.nan  # fraction for polynomial update
+        self.d = np.nan  # temporary, trial-specific polynomial coefficients
+        self.G = np.nan  # Gamma factor
+        self.p_d_t = [np.nan, np.nan]  # probability perceptual decision
 
-        # initialize Q for new model
+        # initialize Q-values of Q-learning model
         self.Q_t = np.full([2, 2], 0.5)
 
-        # todo: achtung für numerical
+        # Variables for numerical solution
         self.product = np.ones(100)
         self.mu = np.repeat(1, 100)
         self.p_mu = np.linspace(0, 1, 100)
         self.mu_for_ev = self.mu
         self.mu_for_ev = self.mu_for_ev/np.sum(self.mu_for_ev)
+        # self.q_0_num = np.nan  # q_0 numerical estimate
+        # self.q_1_num = np.nan  # q_1 numerical estimate
 
     def observation_sample(self, c_t):
         """ This function samples the observation conditional on the contrast difference
@@ -105,6 +73,7 @@ class Agent:
         if self.task_agent_analysis:
             self.o_t = c_t
         else:
+            # Eq. 6
             self.o_t = np.random.normal(c_t, self.sigma)
 
     def p_s_giv_o(self, o_t, avoid_imprecision=True):
@@ -130,7 +99,7 @@ class Agent:
 
         else:
 
-            # For all other cases, pi_s is straightforwardly computed
+            # For all other cases, pi_s is straightforwardly computed according to eq. 7
             pi_0 = (u - v) / (w - v)
             pi_1 = (w - u) / (w - v)
 
@@ -141,7 +110,7 @@ class Agent:
 
         :return: pi_0, pi_1: Categorical belief states
         """
-
+        # See eq. 20
         if self.d_t == 0:
             pi_0 = 1
             pi_1 = 0
@@ -154,9 +123,9 @@ class Agent:
     def decide_p(self):
         """ This function implements the agent's perceptual decision strategy
 
-            For the tak-agent-data analysis model, we sample perceptual choices from a Gaussian CDF.
+            For the tak-agent data analysis model, we sample perceptual choices from a Gaussian CDF.
             During simulations, we minimize the squared loss and take the more likely belief state.
-            The random choice agent A0 generates random choices.
+            The random-choice agent A0 generates random choices.
         """
 
         if self.agent == 0:
@@ -169,9 +138,12 @@ class Agent:
             self.pi_0, self.pi_1 = self.p_s_giv_o(self.o_t)
 
             if self.task_agent_analysis:
+
+                # Eq. 31
                 p_d_0 = norm.cdf(0, self.o_t, self.sigma)
             else:
 
+                # Eq. 8
                 if self.pi_0 >= self.pi_1:
                     p_d_0 = 1
                 else:
@@ -181,7 +153,7 @@ class Agent:
         self.d_t = np.random.binomial(1, self.p_d_t[1])
 
     def eval_poly(self):
-        """ This function evaluates the polynomial
+        """ This function evaluates the polynomial (eq. 18)
 
         :return: poly_eval: Evaluated polynomial
         """
@@ -196,9 +168,10 @@ class Agent:
         """ This function implements the softmax action selection
 
         :param v_a_t: Action values
-        :return: p_a_t: Choice probabilites
+        :return: p_a_t: Choice probability
         """
 
+        # Eq. 35
         p_a_t = np.exp(np.dot(v_a_t, self.beta)) / np.sum(np.exp(np.dot(v_a_t, self.beta)))
 
         return p_a_t
@@ -213,7 +186,7 @@ class Agent:
 
         if self.eval_ana:
 
-            # Conditional expected value of \mu given o_(1:t-1), r_(1:t-1)
+            # Conditional expected value of \mu given o_(1:t-1), r_(1:t-1) according to eq. 13
             self.E_mu_t = self.eval_poly()
 
         else:
@@ -221,7 +194,10 @@ class Agent:
             self.E_mu_t = np.dot(self.mu_for_ev, self.p_mu)
             self.G = np.dot(self.mu_for_ev, self.p_mu)
 
-        # Action valence evaluation
+        # Action valence evaluation (eqs. 11 and 12)
+        # Todo: These can be reformulated to more closely match the formulation in the paper:
+        #  v_a_0 = pi_0 * m_mu + (1-pi_0)(1-m_mu)
+        #  v_a_1 = pi_1 * m_mu + (1-pi_1)(1-m_mu)
         v_a_0 = (pi_0 - pi_1) * self.E_mu_t + pi_1
         v_a_1 = (pi_1 - pi_0) * self.E_mu_t + pi_0
 
@@ -236,6 +212,7 @@ class Agent:
         :return: q_0_1, q_1_0, q_1_1
         """
 
+        # Eq. 26
         q_0_1 = 1-self.q_0_0
         q_1_0 = 1-self.q_0_0
         q_1_1 = self.q_0_0
@@ -243,7 +220,6 @@ class Agent:
         return q_0_1, q_1_0, q_1_1
 
     @staticmethod
-    # def compute_capital_q(self, q_0_0, q_1_0, q_0_1, q_1_1, pi_0, pi_1):
     def compute_capital_q(q_0_0, q_1_0, q_0_1, q_1_1, pi_0, pi_1):
         """ This function computes Q-values Q_0 and Q_1 of the Q-learning model
 
@@ -255,8 +231,8 @@ class Agent:
         :param pi_1: Belief over state 1
         :return: capital_q_a: Q-values
         """
-        # todo: state, action checken
 
+        # Eq. 25
         capital_q_0 = q_0_0 * pi_0 + q_1_0 * pi_1
         capital_q_1 = q_0_1 * pi_0 + q_1_1 * pi_1
 
@@ -272,8 +248,6 @@ class Agent:
         :return: int_voi:  Integrated variable of interest
         """
 
-        # Todo: überlegen ob q_0_0 etc und q_0 and q_1 nicht zu ähnlich klingen. eventuell neue namen!
-
         # If provided, get current reward for voi 2 (q_0)
         r_t = kwargs.get('r_t', None)
 
@@ -281,8 +255,7 @@ class Agent:
         voi_matrix = np.full([len(self.set_o), 2], np.nan)
 
         # Evaluate distribution over observations
-        # todo: sollte ich das alles nochmal mit sampling validieren, müsste ich hier also u anstatt o reinmachennn
-        # Vorher mit dirk besprechen!
+        # todo: for sampling-based validation, this would require u instead of o
         p_o_giv_u = stats.norm.pdf(self.set_o, self.o_t, self.sigma)
 
         # Normalize evaluated probabilities
@@ -323,14 +296,14 @@ class Agent:
         if not voi == 2:
 
             # Expected values and q_0, q_1
-            q_0 = np.array([sum(voi_matrix[:, 0] * p_o_giv_u_norm)])
-            q_1 = np.array([sum(voi_matrix[:, 1] * p_o_giv_u_norm)])
+            q_0 = np.array([sum(voi_matrix[:, 0] * p_o_giv_u_norm)])  # eq. 33 and 38
+            q_1 = np.array([sum(voi_matrix[:, 1] * p_o_giv_u_norm)])  # eq. 34 and 39
             int_voi = [q_0, q_1]
 
         else:
 
             # q_0_0
-            q_0_0 = sum(voi_matrix[:, 0] * p_o_giv_u_norm)
+            q_0_0 = sum(voi_matrix[:, 0] * p_o_giv_u_norm)  # eq. 41
             int_voi = q_0_0
 
         return int_voi
@@ -378,10 +351,12 @@ class Agent:
         """
 
         if not q_learn:
+            # eq. 21 and 22
             mixture_0 = first_comp[0] * self.lambda_param + second_comp[0] * (1 - self.lambda_param)
             mixture_1 = first_comp[1] * self.lambda_param + second_comp[1] * (1 - self.lambda_param)
             mixture = [mixture_0, mixture_1]
         else:
+            # Eq. 28 and 29
             mixture = first_comp * self.lambda_param + second_comp * (1-self.lambda_param)
 
         return mixture
@@ -500,8 +475,7 @@ class Agent:
         if not self.agent == 0:
             self.p_a_t = self.softmax(self.v_a_t)
 
-        # todo: unter umständen nur bei simulationen samplen
-        # Sample agent action
+        # This could be improved such that sampling only takes place during simulations
         self.a_t = np.random.binomial(1, self.p_a_t[1])
 
     def compute_action_dep_rew(self, r_t):
@@ -524,7 +498,7 @@ class Agent:
         :return: q_0, q_1: Computed variables
         """
 
-        # Evaluate the degree of the resulting polynomial (ohne self?)
+        # Evaluate the degree of the resulting polynomial
         self.t = self.c_t.size + 1
 
         # Evaluate action-dependent reward value
@@ -538,7 +512,7 @@ class Agent:
             self.C = (pi_0 - pi_1) * ((1 - self.G) ** (1 - self.r_t)) * \
                      (self.G ** self.r_t) + pi_1
 
-            # Evaluate q_0 and q_1
+            # Evaluate q_0 and q_1 according to eq. 19
             q_0 = (pi_1 ** self.r_t) * (pi_0 ** (1 - self.r_t)) / self.C
             q_1 = ((-1) ** (self.r_t + 1)) * (pi_0 - pi_1) / self.C
 
@@ -565,6 +539,7 @@ class Agent:
         :return: Computed q_0
         """
 
+        # eq. 27
         if pi_0 >= pi_1:
             q_0_0 = self.q_0_0 + pi_0 * self.alpha * (self.r_t - self.q_0_0)
         else:
@@ -573,7 +548,9 @@ class Agent:
         return q_0_0
 
     def update_coefficients(self):
-        # This function updates the polynomial coefficients
+        # This function updates the polynomial coefficients as shown in eq. 17
+
+        # Todo: replace self.c_t with self.rho_t for consistency with paper.
 
         # Initialize update coefficients
         self.d = np.zeros(self.t)
@@ -658,7 +635,7 @@ class Agent:
 
             if self.task_agent_analysis:
 
-                # Compute q's by integrating over possible observations
+                # Compute q's by integrating over possible observations (eq. 36)
                 voi = 1
                 q_s = self.integrate_voi(voi, r_t=r_t)
                 self.q_0 = q_s[0]
@@ -688,8 +665,6 @@ class Agent:
             self.update_coefficients()
 
         elif self.agent == 3:
-
-            # todo: muss man hier nicht auch action-dependent reward berechnen?
 
             if self.task_agent_analysis:
 
@@ -735,7 +710,7 @@ class Agent:
                 # Compute q_0_0 by integrating over possible observations
                 self.q_0_0 = self.update_a4(r_t)
 
-                # todo: das noch klären
+                # todo: potentially merge variables
                 self.E_mu_t = self.q_0_0
                 self.G = self.E_mu_t
 
@@ -750,7 +725,7 @@ class Agent:
                 # Compute q based on sampled observation
                 self.q_0_0 = self.compute_q_0_0(pi_0, pi_1)
 
-                # todo: das noch klären
+                # todo: potentially merge variables
                 self.E_mu_t = self.q_0_0
                 self.G = self.E_mu_t
 
@@ -759,7 +734,7 @@ class Agent:
             # Compute q_0_0 categorically
             self.q_0_0 = self.update_a5(r_t)
 
-            # todo: das noch klären
+            # todo: potentially merge variables
             self.E_mu_t = self.q_0_0
             self.G = self.E_mu_t
 
@@ -776,7 +751,7 @@ class Agent:
                 # Compute final q_0_0 as a function of \lambda
                 self.q_0_0 = self.compute_mixture(q_0_0_ag_4, q_0_0_ag_5, q_learn=True)
 
-                # todo: das noch klären
+                # todo: potentially merge variables
                 self.E_mu_t = self.q_0_0
                 self.G = self.E_mu_t
 
@@ -797,6 +772,6 @@ class Agent:
                 # Compute final q_0_0 as a function of \lambda
                 self.q_0_0 = self.compute_mixture(q_0_0_ag_4, q_0_0_ag_5, q_learn=True)
 
-                # todo: das noch klären
+                # todo: potentially merge variables
                 self.E_mu_t = self.q_0_0
                 self.G = self.E_mu_t

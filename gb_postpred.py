@@ -8,8 +8,6 @@ from GbAgentVars import AgentVars
 from GbSimVars import SimVars
 from run_postpred import run_postpred
 
-# todo: soll prior_pred auch mit 10sp laufen oder wäre das eh das selbe?
-
 # Set random number generator for reproducible results
 np.random.seed(123)
 
@@ -17,7 +15,7 @@ np.random.seed(123)
 exp3_data = pd.read_pickle('gb_data/gb_exp3_data.pkl')
 
 # Load participants parameters
-sub_params = pd.read_pickle('gb_data/modelbased_april_beta.pkl')
+sub_params = pd.read_pickle('gb_data/modelbased.pkl')
 
 # Task parameters
 task_vars = TaskVars()
@@ -26,7 +24,6 @@ task_vars.B = 12
 
 # Agent parameters
 agent_vars = AgentVars()
-# agent_vars.beta = 1
 agent_vars.task_agent_analysis = True
 sim_agents = [0, 1, 2, 3, 4, 5, 6]
 
@@ -39,7 +36,7 @@ sim_vars.n_eval = 10
 # 2. Posterior predictions
 # -------------------------
 
-# Turn integrate over observations on
+# Turn integration over observations on
 sim_vars.post_pred = True
 
 # Run simulation
@@ -59,7 +56,10 @@ sub_params['alpha_A4'] = sub_params['alpha_A5'] = sub_params['alpha_A6'] = 0.1
 # Turn posterior predictions off
 sim_vars.post_pred = False
 
-# Turn integrate over observations off
+# Simulate 1 time
+sim_vars.n_eval = 1
+
+# Turn integration over observations off
 agent_vars.task_agent_analysis = False
 
 # Run simulation

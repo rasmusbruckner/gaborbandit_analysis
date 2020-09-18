@@ -15,8 +15,9 @@ from latex_plt import latex_plt
 from pathlib import Path, PureWindowsPath
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-# Update matplotlib to use Latex and to change some defaults
 import os
+
+# Update matplotlib to use Latex and to change some defaults
 os.environ["PATH"] += os.pathsep + '/usr/local/texlive/2016/bin/x86_64-darwin'
 matplotlib = latex_plt(matplotlib)
 
@@ -30,10 +31,10 @@ home_dir = path[1]
 # -----------------------------------------------------
 
 # Data of third experiment
-exp3_data_final = pd.read_pickle('gb_data/gb_exp3_data_final.pkl')
+exp3_data = pd.read_pickle('gb_data/gb_exp3_data.pkl')
 
 # Extract all blocks of our participants
-all_blocks = list(set(exp3_data_final['block_file']))
+all_blocks = list(set(exp3_data['block_file']))
 
 # Adjust path to gb task
 path = '/Users/rasmus/Dropbox/gabor_bandit/code/gaborbandit_task/'

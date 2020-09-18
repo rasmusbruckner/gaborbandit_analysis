@@ -1,8 +1,8 @@
 """ This script runs the preprocessing steps
 
-    1) Load BIDS formatted data
-    2) Create preprocessed data frames for each experiment
-    3) Save data
+    1. Load BIDS formatted data
+    2. Create preprocessed data frames for each experiment
+    3. Save data
 
 """
 
@@ -13,7 +13,8 @@ from fnmatch import fnmatch
 from gb_loaddata import loaddata
 from gb_compute_misses import compute_misses
 
-# 1) Load BIDS formatted data
+# ---------------------------
+# 1. Load BIDS-formatted data
 # ---------------------------
 
 # Set path and directory
@@ -32,7 +33,8 @@ data_pn = loaddata(filenames)
 # Number of subjects
 N = len(list(set(data_pn['participant'])))
 
-# 2) Create preprocessed data frames for each experiment
+# ------------------------------------------------------
+# 2. Create preprocessed data frames for each experiment
 # ------------------------------------------------------
 
 # Experiment 1 - Perceptual decision making
@@ -45,7 +47,6 @@ n_misses_min_1, n_misses_max_1, n_misses_mean_1, n_misses_sem_1 = compute_misses
 # Experiment 1 - Perceptual decision making
 exp1_data_recov = data_pn[(data_pn['trial_type'] == 'patches') & (data_pn['complete'])].copy()
 exp1_data_recov.loc[:, 'b_t'] = 0
-
 
 # Experiment 2 - Economic decisions making without perceptual uncertainty
 exp2_raw = data_pn[(data_pn['trial_type'] == 'main_safe')].copy()  # raw data to compute misses
@@ -80,18 +81,11 @@ n_subj_3 = len(list(set(exp3_data['participant'])))
 if not n_subj_1 == n_subj_2 == n_subj_3:
     sys.exit("Unequal number of participants")
 
-# todo: das am ende dann anpassen, wenn sicher ist, dass alles stimmt!
-# für gb_figure_1 stimmt es!
-# ...
-
-#  3) Save data
 # -------------
-# exp1_data.to_pickle('gb_data/gb_exp1_data.pkl')
-# exp1_data_recov.to_pickle('gb_data/gb_exp1_data_recov.pkl')
-# exp2_data.to_pickle('gb_data/gb_exp2_data.pkl')
-# exp3_data.to_pickle('gb_data/gb_exp3_data.pkl')
+#  3. Save data
+# -------------
 
-exp1_data.to_pickle('gb_exp1_data_final.pkl')
-exp1_data_recov.to_pickle('gb_exp1_data_recov_final.pkl')
-exp2_data.to_pickle('gb_exp2_data_final.pkl')
-exp3_data.to_pickle('gb_exp3_data_final.pkl')
+exp1_data.to_pickle('gb_exp1_data.pkl')
+exp1_data_recov.to_pickle('gb_exp1_data_recov.pkl')
+exp2_data.to_pickle('gb_exp2_data.pkl')
+exp3_data.to_pickle('gb_exp3_data.pkl')

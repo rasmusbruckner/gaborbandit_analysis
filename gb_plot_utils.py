@@ -1,5 +1,3 @@
-# This script contains plot utilities
-
 from PIL import Image
 from matplotlib.offsetbox import (OffsetImage, AnnotationBbox)
 import numpy as np
@@ -7,8 +5,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from scipy import stats
 from matplotlib.lines import Line2D
-from GbAgent import Agent
-from GbAgentVars import AgentVars
+
 
 def cm2inch(*tupl):
     """ This function convertes cm to inches
@@ -26,16 +23,22 @@ def cm2inch(*tupl):
         return tuple(i / inch for i in tupl)
 
 
-def center_x(cell_lower_left_x, cell_width, word_length):
+def center_x(cell_lower_left_x, cell_width, word_length, correct_for_length=False):
     """ This function centers text along the x-axis
 
     :param cell_lower_left_x: Lower left x-coordinate
     :param cell_width: Width of cell in which text appears
     :param word_length: Length of plotted word
+    :param correct_for_length: takes into account word length
     :return: Centered x-position
     """
 
-    return cell_lower_left_x + (cell_width / 2.0) - (word_length / 2.0)
+    if correct_for_length:
+        x_center = cell_lower_left_x + (cell_width/2) - (word_length / 2.0)
+    else:
+        x_center = cell_lower_left_x + (cell_width / 2)
+
+    return x_center
 
 
 def center_y(cell_lower_left_y, cell_height, y0, word_height):
@@ -43,7 +46,7 @@ def center_y(cell_lower_left_y, cell_height, y0, word_height):
 
     :param cell_lower_left_y: Lower left y-coordinate
     :param cell_height: Height of cell in which text appears
-    :param y0: Lower bound of text (sometimes can be lower than cell_lower_left-y (i.e. letter y))
+    :param y0: Lower bound of text (sometimes can be lower than cell_lower_left_y (i.e., letter y))
     :param word_height: Height of plotted word
     :return: Centered y-position
     """
@@ -60,7 +63,7 @@ def get_text_coords(f, ax, cell_lower_left_x, cell_lower_left_y, printed_word, f
     :param cell_lower_left_y: Lower left y-coordinate
     :param printed_word: Text of which length is computed
     :param fontsize: Specified font size
-    :return: word_length, word_height, bbox: Computed word length and height and text coordinates
+    :return: word_length, word_height, bbox: Computed word length and height, and text coordinates
     """
 
     # Print text to lower left cell corner
@@ -104,26 +107,24 @@ def plot_centered_text(f, ax, cell_x0, cell_y0, cell_x1, cell_y1,
     cell_height = (cell_y1 + cell_y0)
 
     # Compute centered x position: lower left + half of cell width, then subtract half of word length
-    # x = cell_lower_left_x + (cell_width / 2.0) - (word_length / 2.0)
-    x = center_x(cell_x0, cell_width, word_length)
+    x = center_x(cell_x0, cell_width, word_length, correct_for_length=False)
 
     # Compute centered y position: same as above but additionally correct for word height
     # (because some letters such as y start below y coordinate)
-    # y = cell_lower_left_y + ((cell_height / 2.0) - bbox.y0) - (word_height / 2.0)
     y = center_y(cell_y0, cell_height, bbox.y0, word_height)
 
     # Print centered text
     if c_type == 'both':
-        ax.text(x, y, text, fontsize=fontsize, fontweight=fontweight)
+        ax.text(x, y, text, fontsize=fontsize, fontweight=fontweight, horizontalalignment='center')
     else:
-        ax.text(cell_x0, y, text, fontsize=fontsize, fontweight=fontweight)
+        ax.text(cell_x0, y, text, fontsize=fontsize, fontweight=fontweight, horizontalalignment='center')
 
     return ax, word_length, word_height, bbox
 
 
 def plot_image(f, img_path, cell_x0, cell_x1, cell_y0, ax, text_y_dist, text, text_pos, fontsize,
                zoom=0.2, cell_y1=np.nan):
-    """ This function plots images and corresponding text for the task schematic
+    """ This function plots images and corresponding text of the task schematic
 
     :param f: Figure object
     :param img_path: Path of image
@@ -190,7 +191,7 @@ def plot_image(f, img_path, cell_x0, cell_x1, cell_y0, ax, text_y_dist, text, te
         # Plot text centrally above image
         word_length, _, _ = get_text_coords(f, ax, bbox.x0, bbox.y0, text, 6)
         cell_width = bbox.x1 - bbox.x0
-        x = center_x(bbox.x0, cell_width, word_length)
+        x = center_x(bbox.x0, cell_width, word_length, correct_for_length=True)
         y = bbox.y1 + text_y_dist
 
     ax.text(x, y, text, fontsize=fontsize, color='k')
@@ -199,7 +200,7 @@ def plot_image(f, img_path, cell_x0, cell_x1, cell_y0, ax, text_y_dist, text, te
 
 
 def plot_arrow(ax, x1, y1, x2, y2, shrink_a=1, shrink_b=1, connectionstyle="arc3,rad=0", arrow_style="<-"):
-    """ This function plot arrows for the task schematic
+    """ This function plots arrows of the task schematic
 
     :param ax: Axis object
     :param x1: x-position of starting point
@@ -215,7 +216,7 @@ def plot_arrow(ax, x1, y1, x2, y2, shrink_a=1, shrink_b=1, connectionstyle="arc3
 
     ax.annotate("", xy=(x1, y1), xycoords='data', xytext=(x2, y2), textcoords='data',
                 arrowprops=dict(arrowstyle=arrow_style, color="0.5", shrinkA=shrink_a, shrinkB=shrink_b,
-                                patchA=None, patchB=None, connectionstyle=connectionstyle))
+                                patchA=None, patchB=None, connectionstyle=connectionstyle, lw=1))
 
     return ax
 
@@ -242,7 +243,7 @@ def plot_rec(ax, patches, cell_lower_left_x, width, cell_lower_left_y, height):
 
 
 def plot_table(ax, n_rows=8, n_cols=4, col_header_line=0.1):
-    """
+    """ This function labels a table
 
     :param ax: Axis object
     :param n_rows: Number of rows
@@ -301,7 +302,7 @@ def bs_plot(ax, agent, c_set, color_ind, sigma, scalar_map, which_state=0):
     :param sigma: Perceptual sensitivity parameter
     :param scalar_map: Color map
     :param which_state: Belief state that is plotted
-    :return: Axis object
+    :return: ax: Axis object
     """
 
     # Initialize counter for colors
@@ -322,7 +323,6 @@ def bs_plot(ax, agent, c_set, color_ind, sigma, scalar_map, which_state=0):
         # Compute and plot belief state for high sensitivity condition
         agent.sigma = sigma
         pi_0, pi_1 = agent.p_s_giv_o(c_set[i])
-
         if which_state == 0:
             ax.plot(c_set[i], pi_0, '.', color=color, markersize=2)
         else:
@@ -334,14 +334,14 @@ def bs_plot(ax, agent, c_set, color_ind, sigma, scalar_map, which_state=0):
 def plot_observations(ax_0, ax_1, scalar_map, c_t, color_ind, sigma, x, x_lim, labels="full"):
     """ This function plots the observation illustration
 
-    :param ax_0: First axis object
-    :param ax_1: Second axis object
+    :param ax_0: Zeroth axis object
+    :param ax_1: First axis object
     :param scalar_map: Color map
     :param c_t: Contrast differences
     :param color_ind: Color indices
     :param sigma: Perceptual sensitivity parameter
-    :param x: x-axis
-    :param x_lim: x limits
+    :param x: X-axis
+    :param x_lim: X-limits
     :param labels: Label style (full vs. reduced)
     :return: ax_0, ax_1: Axis objects
     """
@@ -405,18 +405,18 @@ def plot_agent_demo(ax_0, ax_1, ax_2, ax_3, ax_4, x, df_sim, header, agent_color
     """ This function plots the agent demonstration
 
     :param ax_0: Zeroth axis object
-    :param ax_1: Second axis object
-    :param ax_2: Third axis object
-    :param ax_3: Fourth axis object
-    :param ax_4: Fifth axis object
+    :param ax_1: First axis object
+    :param ax_2: Second axis object
+    :param ax_3: Third axis object
+    :param ax_4: Fourth axis object
     :param x: x-axis
-    :param df_sim: data frame with simulated data
+    :param df_sim: Data frame with simulated data
     :param header: Plot headers
     :param agent_color: Agent color code
     :param markersize: Marker size
     :param fontsize: Font size
     :param labels: Axis label style (full vs. reduced)
-    :param bs: belief state style (normal vs. categorical)
+    :param bs: Belief state style (normal vs. categorical)
     """
 
     plot_range = np.arange(25)
@@ -471,16 +471,16 @@ def plot_agent_demo(ax_0, ax_1, ax_2, ax_3, ax_4, x, df_sim, header, agent_color
     sel_v_a_1 = df_sim['v_a_1'][plot_range]
     selected_ev = pd.concat([sel_v_a_0[which_choice == 0], sel_v_a_1[which_choice == 1]]).sort_index()
 
+    # Plot expected value
     ax_3.plot(x, selected_ev, markersize=markersize, color=agent_color, linestyle='-', label='HHZ 1')
     ax_3.axhline(0.5, color='black', lw=0.5, linestyle='--')
     ax_3.tick_params(labelsize=fontsize)
 
     # Economic decision
-    #ax_3.plot(x[df_sim['a_t'] == 0], df_sim['a_t'][df_sim['a_t'] == 0], 'o', color='k', markersize=markersize)
-    #ax_3.plot(x[df_sim['a_t'] == 1], df_sim['a_t'][df_sim['a_t'] == 1], 'o', color='k', markersize=markersize)
     ax_3.plot(x[which_choice == 0], which_choice[which_choice == 0], 'o', color='k', markersize=markersize)
     ax_3.plot(x[which_choice == 1], which_choice[which_choice == 1], 'o', color='k', markersize=markersize)
     ax_3.set_ylim([-0.2, 1.2])
+    ax_3.set_yticks([0.0, 0.5, 1.0])
     ax_3.tick_params(
         axis='x',  # changes apply to the x-axis
         which='both',  # both major and minor ticks are affected
@@ -501,17 +501,10 @@ def plot_agent_demo(ax_0, ax_1, ax_2, ax_3, ax_4, x, df_sim, header, agent_color
     mean_corr_a1 = df_sim.groupby(df_sim['t'])['e_mu_t'].mean()
 
     # Plot all expected values
-    # ax_0.axhline(0.5, color='black', lw=0.5, linestyle='--')
-    # ax_0.axhline(0.8, color='black', lw=0.5, linestyle='--')
     for _, group in df_sim.groupby('block'):
         group.plot(x='t', y='e_mu_t', ax=ax_4, legend=False, color='gray', linewidth=1, alpha=0.2)
 
-    # ax_0.set_ylim([0.2, 1])
-    # ax_0.tick_params(labelsize=fontsize)
-    # ax_0.set_xlabel(r'Trial $(t)$', fontsize=fontsize)
-    # ax_0.set_ylabel(r'Expected Value ($E_{\mu}$)', fontsize=fontsize)
     ax_4.plot(x, mean_corr_a1, linewidth=1, color=agent_color, linestyle='--')
-    # ax_0.set_title('Belief-State weighted Bayesian learning (A1)', fontsize=8)
     ax_4.plot(x, df_sim['e_mu_t'][plot_range], markersize=markersize, color=agent_color)
     ax_4.axhline(0.8, color='black', lw=0.5, linestyle='--')
     ax_4.set_xlabel('Trial', fontsize=fontsize)
@@ -530,7 +523,7 @@ def plot_agent_demo(ax_0, ax_1, ax_2, ax_3, ax_4, x, df_sim, header, agent_color
         ax_0.set_ylabel('State', fontsize=fontsize)
         ax_1.set_ylabel('Contrast\ndifference', fontsize=fontsize)
         ax_2.set_ylabel('Belief\nstate')
-        ax_3.set_ylabel('Ev and \nchoice')
+        ax_3.set_ylabel('EV and \nchoice')
         ax_4.set_ylabel('Reward and\nlearning')
 
 
@@ -557,23 +550,24 @@ def get_bic(df_bic, div):
 
     return bic_ag_0, bic_ag_1, bic_ag_2, bic_ag_3, bic_ag_4, bic_ag_5, bic_ag_6
 
+
 def plot_pmu(agent, bs0, bs1, color_ind, s_map, current_ax, plot_leg=True):
     """ This function illustrates evolution of p(mu) for given constant belief states
 
-    :param agent_obj: Agent object instance
+    :param agent: Agent object instance
     :param bs0: p(s_t=0|c_t)
     :param bs1: p(s_t=1|c_t)
     :param color_ind: cval_ind
     :param s_map: scalar_map
     :param current_ax: Current axis
+    :param plot_leg: Add legend to plot
     :return: agent_obj, current_ax
     """
 
-    #agent_vars = AgentVars()
-    #agent = Agent(agent_vars)
-
+    # Number of trials
     n = 10
 
+    # Initialize model
     coeff = np.array([1])
     mu = np.linspace(0, 1, 101)
     p_mu = np.full([101, 10], np.nan)
@@ -585,38 +579,46 @@ def plot_pmu(agent, bs0, bs1, color_ind, s_map, current_ax, plot_leg=True):
     agent.c_t = coeff
     v_a_t[0, :] = agent.compute_valence(1, 0)
 
-    update = np.full(n, np.nan)
-    pe = np.full(n, np.nan)
-    pi_rel = np.full(n, np.nan)
+    # Initialize variables for numerical solution
+    update = np.full(n, np.nan)  # update
+    pe = np.full(n, np.nan)  # prediction error
+    pi_rel = np.full(n, np.nan)  # relative pi
+    pe[0] = 0.5  # initial prediction error
 
-    pe[0] = 0.5
-
+    # Cycle over trials
     for i in range(1, n):
 
+        # Compute prediction error
         if bs0 >= bs1:
             pe[i] = 1 - agent.E_mu_t
         else:
             pe[i] = 0 - agent.E_mu_t
 
+        # Previous expectation
         prev_ev = agent.E_mu_t
 
+        # Set action to a_t = 0
         agent.a_t = np.float(0)
 
+        # Compute q based on r_t = 1
         agent.q_0, agent.q_1 = agent.compute_q(np.float(1), np.float(bs0), np.float(bs1))
 
-        #agent.t = agent.c_t.size + 1
-        #coeff = agent.update_coefficients()
+        # Update the polynomial coefficients
         agent.update_coefficients()
-        #agent.c_t = coeff
+
+        # Extract p_mu
         p_mu[:, i] = np.polyval(agent.c_t, mu)
 
+        # Plot p_mu
         current_ax.plot(mu, p_mu[:, i], color=s_map.to_rgba(color_ind[i]))
-        #current_ax.plot(mu, p_mu[:, i])
 
+        # Compute current expected value
         v_a_t[i, :] = agent.compute_valence(1, 0)
 
+        # Compute the update
         update[i] = agent.E_mu_t - prev_ev
 
+        # Record relative pi
         pi_rel[i] = -1**2 * (bs0 - bs1) * (bs1 * bs0)
 
     if plot_leg:

@@ -7,14 +7,6 @@ class Task:
     def __init__(self, task_vars):
         """ This function defines the instance variable unique to each instance
 
-                All instance variables of task_vars object
-                C: Discrete set of contrast differences
-                p_cs: Discrete uniform distribution paramters of p(c_t|s_t)
-                p_ras: Bernoulli distribution parameters of p^(a_t)(r_t|s,mu)
-                s_t: Current state
-                c_t: Current contrast difference
-                r_t: Current reward
-
         :param task_vars: Object with task parameters
         """
 
@@ -44,6 +36,7 @@ class Task:
     def state_sample(self):
         # This function samples the task state from a Bernoulli distribution
 
+        # Eq. 2
         self.s_t = np.random.binomial(1, self.Theta)
 
     def contrast_sample(self):
@@ -53,6 +46,7 @@ class Task:
         element of set {-0.08, 0.08}.
         """
 
+        # Eq. 3
         if self.experiment == 1 or self.experiment == 3:
             p_cs_giv_s = self.p_cs[:, self.s_t].flatten().tolist()  # contrast differences conditional on state
             s_cs_giv_s = np.random.multinomial(1, p_cs_giv_s, size=1).flatten()  # sample contrast difference
@@ -70,4 +64,5 @@ class Task:
         :param a_t: Current economic decision
         """
 
+        # Eq. 4
         self.r_t = np.random.binomial(1, self.p_ras[a_t, self.s_t])

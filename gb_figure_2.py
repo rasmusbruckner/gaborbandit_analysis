@@ -1,12 +1,12 @@
 """ This script plots Figure 2
 
-    0. Prepare plotting
-    1. Plot task-agent-interaction schematic
-    2. Plot belief state illustration
-    3. Plot agent table
-    4. Plot agent performance comparison
-    5. Agent demonstration across task block
-    6. Add subplot labels and save figure
+    1. Prepare plotting
+    2. Plot task-agent-interaction schematic
+    3. Plot belief state illustration
+    4. Plot agent table
+    5. Plot agent performance comparison
+    6. Agent demonstration across task block
+    7. Add subplot labels and save figure
 """
 
 import matplotlib
@@ -28,47 +28,30 @@ import matplotlib.gridspec as gridspec
 import os
 
 
-# Todo: checken
-# GbAgentVars (noch task_agent_analysis und q_0_0 beschreiben, ansonsten done)
-# GbAgent (noch namen anpassen, ansonsten done)
-# gb_simulation (checken ob task_agent_analysis jemals true? ansonsten done)
-# GbSimVars (namen anpassen, ansonsten done)
-# gbTaskVars (namen anpassen, ansonsten done)
-# gbTask (Namen anpassen, ansonsten done)
-# Gb_task_agent_int (namen anpassen, ansonsten done)
-# truncate_colormap (done)
-# Gb_postpred (done)
-
-
 # Update matplotlib to use Latex and to change some defaults
 os.environ["PATH"] += os.pathsep + '/usr/local/texlive/2016/bin/x86_64-darwin'
 matplotlib = latex_plt(matplotlib)
 
 # -------------------
-# 0. Prepare plotting
+# 1. Prepare plotting
 # -------------------
 
 # Load model simulation data
 # --------------------------
 
 # Model performance
-# f = open('gb_data/predictions.pkl', 'rb')
-# These simulation data were generated using the script gb_postpred.py
-f = open('gb_data/predictions_final.pkl', 'rb')
-post_pred = pickle.load(f)
+f = open('gb_data/predictions.pkl', 'rb')  # these simulation data were generated using the script gb_postpred.py
+pred = pickle.load(f)
 f.close()
 
 # Simulations
-mean_corr_A0 = post_pred[0, :]
-mean_corr_A1 = post_pred[1, :]
-mean_corr_A2 = post_pred[2, :]
-mean_corr_A3 = post_pred[3, :]
-mean_corr_A4 = post_pred[4, :]
-mean_corr_A5 = post_pred[5, :]
-mean_corr_A6 = post_pred[6, :]
-
-# Prepare plots
-# -------------
+mean_corr_A0 = pred[0, :]
+mean_corr_A1 = pred[1, :]
+mean_corr_A2 = pred[2, :]
+mean_corr_A3 = pred[3, :]
+mean_corr_A4 = pred[4, :]
+mean_corr_A5 = pred[5, :]
+mean_corr_A6 = pred[6, :]
 
 # Plot properties
 markersize = 2
@@ -82,7 +65,7 @@ f = plt.figure(figsize=cm2inch(fig_witdh, fig_height))
 gs0 = gridspec.GridSpec(nrows=7, ncols=2, left=0.085, hspace=0.6, top=.95, right=0.99, wspace=0.3, bottom=0.05)
 
 # ----------------------------------------
-# 1. Plot task-agent-interaction schematic
+# 2. Plot task-agent-interaction schematic
 # ----------------------------------------
 
 gs01 = gridspec.GridSpecFromSubplotSpec(1, 1, subplot_spec=gs0[0:2, 0])
@@ -114,7 +97,7 @@ printed_word = "Agent"
 cell_x0 = 0
 cell_y0 = 0
 word_length, _, _ = get_text_coords(f, ax_00, cell_x0, cell_y0, printed_word, fontsize)
-x = center_x(0, 1, word_length)
+x = center_x(0, 1, word_length, correct_for_length=True)
 ax_00.text(x, 0.92, printed_word)
 
 # Plot smaller left rectangle with text
@@ -127,7 +110,7 @@ plot_centered_text(f, ax_00, cell_x0, cell_y0, cell_x1, cell_y1,
                    'Belief state,\nperceptual\ndecision', fontsize)
 printed_word = "Perception"
 word_length, _, _ = get_text_coords(f, ax_00, cell_x0, cell_y0, printed_word, fontsize)
-x = center_x(cell_x0, width, word_length)
+x = center_x(cell_x0, width, word_length, correct_for_length=True)
 ax_00.text(x, 0.82, printed_word)
 
 # Plot smaller middle rectangle with text
@@ -136,10 +119,10 @@ ax_00 = plot_rec(ax_00, patches, cell_x0, width, cell_y0, height)
 cell_x1 = cell_x0 + width
 cell_y1 = cell_y0 + height
 plot_centered_text(f, ax_00, cell_x0, cell_y0, cell_x1, cell_y1,
-                   'Action-depen-\ndent reward\nexpectation ', fontsize)
+                   'Action-depen-\ndent expected\nvalue', fontsize)
 printed_word = "Action"
 word_length, _, _ = get_text_coords(f, ax_00, cell_x0, cell_y0, printed_word, fontsize)
-x = center_x(cell_x0, width, word_length)
+x = center_x(cell_x0, width, word_length, correct_for_length=True)
 ax_00.text(x, 0.82, printed_word)
 
 # Plot smaller right rectangle with text
@@ -151,7 +134,7 @@ plot_centered_text(f, ax_00, cell_x0, cell_y0, cell_x1, cell_y1,
                    'Reward-based\nlearning', fontsize)
 printed_word = "Learning"
 word_length, _, _ = get_text_coords(f, ax_00, cell_x0, cell_y0, printed_word, fontsize)
-x = center_x(cell_x0, width, word_length)
+x = center_x(cell_x0, width, word_length, correct_for_length=True)
 ax_00.text(x, 0.82, printed_word)
 
 # Task box
@@ -160,7 +143,7 @@ ax_00.text(x, 0.82, printed_word)
 # Add task text
 printed_word = "Task"
 word_length, _, _ = get_text_coords(f, ax_00, cell_x0, cell_y0, printed_word, fontsize)
-x = center_x(0, 1, word_length)
+x = center_x(0, 1, word_length, correct_for_length=True)
 ax_00.text(x, 0.38, printed_word)
 
 # Add task images and text
@@ -187,7 +170,7 @@ plot_image(f, img_path, cell_x0, cell_x1, image_y, ax_00, text_y_dist, text, tex
 ax_00.axis('off')
 
 # ---------------------------------
-# 2. Plot belief state illustration
+# 3. Plot belief state illustration
 # ---------------------------------
 
 # Define subplots
@@ -220,7 +203,7 @@ ls = 0.06
 agent_vars = AgentVars()
 agent_vars.agent = 1
 agent_vars.task_agent_analysis = False
-agent = Agent(agent_vars)  # todo: brauche ich das?
+agent = Agent(agent_vars)
 
 # Set maximal contrast difference value
 kappa = 0.08
@@ -238,15 +221,11 @@ U = [U[i:i+1] for i in range(0, len(U), 1)]
 
 # Create range of colors for range of contrast differences
 cval_ind = range(len(d_t))
-c_norm = colors.Normalize(vmin=0, vmax=cval_ind[-1])
 
 # Set resolution for distributions over observatiosn
 x = np.linspace(-x_lim, x_lim, 1000)
 
-# Create range of colors for range of contrast differences
-cval_ind = range(len(d_t))
-
-# Initialize belief state arrays
+# Initialize belief-state arrays
 pi1_hs = np.zeros(24)  # state 1 low noise
 pi1_ms = np.zeros(24)  # state 1 high noise
 
@@ -286,7 +265,7 @@ ax_06.set_xlabel(r'Contrast difference', fontsize=fontsize)
 ax_06.axes.get_yaxis().set_ticks([])
 
 # --------------------
-# 3. Plot agent table
+# 4. Plot agent table
 # --------------------
 
 # Define subplots
@@ -305,10 +284,10 @@ col_headers = ['Agent', 'Perceptual choice', 'Economic choice EV', 'Learning']
 row_headers = ['A6', 'A5',  'A4', 'A3', 'A2', 'A1', 'A0']
 
 # Table content
-data_names = ['High BS', 'High BS', 'High BS', 'High BS', 'High BS', 'High BS', 'Random',
-              'A4/A5 mixture', 'Categorical', 'BS weighted', 'A1/A2 mixture', 'Categorical', 'BS weighted', 'Random',
-              'A4/A5 mixture (Q-learning)', 'Categorical (Q-learning)', 'BS weighted (Q-learning)',
-              'A1/A2 mixture (Bayesian)', 'Categorical (Bayesian)', 'BS weighted (Bayesian)', 'Random']
+data_names = ['High belief state', 'High belief state', 'High belief state', 'High belief state', 'High belief state', 'High belief state', 'Random',
+              'A4/A5 mixture', 'Categorical', 'Belief-state weighted', 'A1/A2 mixture', 'Categorical', 'Belief-state weighted', 'Random',
+              'A4/A5 Q-learning mixture', 'Categorical Q-learning', 'Belief-state Q-learning',
+              'A1/A2 Bayesian mixture', 'Categorical Bayesian', 'Belief-state Bayesian', 'Random']
 
 # Set table fontsize
 fontsize = 5
@@ -316,7 +295,7 @@ fontsize = 5
 # Initialize counter
 counter = 0
 
-
+# Cycle over columns and rows
 for i in range(1, len(col_lines)-1):
 
     for j in range(0, len(row_lines)-2):
@@ -346,7 +325,7 @@ for i in range(0, len(col_headers)):
 ax_07.axis('off')
 
 # ------------------------------------
-# 4. Plot agent performance comparison
+# 5. Plot agent performance comparison
 # ------------------------------------
 
 # Define subplot
@@ -374,11 +353,11 @@ ax_08.bar(5, np.mean(mean_corr_A5), color=green_2)
 ax_08.bar(6, np.mean(mean_corr_A6), color=green_3)
 ax_08.set_xticks([0, 1, 2, 3, 4, 5, 6])
 plt.ylim(0.4, 0.8)
-plt.ylabel('Performance')
+plt.ylabel('Economic-choice\nperformance')
 plt.xlabel('Agent')
 
 # ----------------------------------------
-# 5. Agent demonstration across task block
+# 6. Agent demonstration across task block
 # ----------------------------------------
 
 # Define subplots
@@ -441,14 +420,14 @@ x = np.linspace(0, 24, 25)
 np.random.seed(123)
 agent = 1
 df = gb_simulation(T, B, sigma, agent, beta)
-header = "Agent A1"
+header = "Belief-state Bayesian A1"
 plot_agent_demo(ax_09, ax_10, ax_11, ax_12, ax_13, x, df, header, blue_1, markersize=markersize, fontsize=fontsize)
 
 # Simulate data with agent 2
 np.random.seed(123)
 agent = 2
 df = gb_simulation(T, B, sigma, agent, beta)
-header = "Agent A2"
+header = "Categorical Bayesian A2"
 plot_agent_demo(ax_14, ax_15, ax_16, ax_17, ax_18, x, df, header, blue_2, markersize=markersize,
                 fontsize=fontsize, labels='reduced', bs='cat')
 
@@ -456,16 +435,15 @@ plot_agent_demo(ax_14, ax_15, ax_16, ax_17, ax_18, x, df, header, blue_2, marker
 np.random.seed(123)
 agent = 4
 df = gb_simulation(T, B, sigma, agent, beta)
-header = "Agent A4"
+header = "Belief-state Q-learning A4"
 plot_agent_demo(ax_19, ax_20, ax_21, ax_22, ax_23, x, df, header, green_1, markersize=markersize,
                 fontsize=fontsize, labels='reduced')
 
-# todo:
 # Simulate data with agent 5
 np.random.seed(123)
 agent = 5
 df = gb_simulation(T, B, sigma, agent, beta)
-header = "Agent A5"
+header = "Categorical Q-learning A5"
 plot_agent_demo(ax_24, ax_25, ax_26, ax_27, ax_28, x, df, header, green_3, markersize=markersize,
                 fontsize=fontsize, labels='reduced', bs='cat')
 
@@ -473,7 +451,7 @@ plot_agent_demo(ax_24, ax_25, ax_26, ax_27, ax_28, x, df, header, green_3, marke
 sns.despine()
 
 # -------------------------------------
-# 6. Add subplot labels and save figure
+# 7. Add subplot labels and save figure
 # -------------------------------------
 
 # Label letters
@@ -485,58 +463,6 @@ label_subplots(f, texts)
 # Save plot
 savename = 'gb_figures/gb_figure_2.pdf'
 plt.savefig(savename, dpi=400)
-
-# Create figure with multiple subplots
-f = plt.figure(figsize=(6.4, 2.4))
-ax_0 = plt.subplot2grid((1, 2), (0, 0), colspan=1, rowspan=1)
-
-# Define colormap
-cmap = truncate_colormap(plt.get_cmap('bone'), 0.1, 0.9)
-# cmap = plt.get_cmap('bone')
-
-# Create range of colors for range of contrast differences
-cval_ind = range(10)
-c_norm = colors.Normalize(vmin=0, vmax=cval_ind[-1])
-scalar_map = cmx.ScalarMappable(norm=c_norm, cmap=cmap)
-
-agent_vars = AgentVars()
-agent_vars.agent = 1
-agent = Agent(agent_vars)  # brauche ich das?
-
-# Example of \pi_0 = 1, \pi_1 = 0
-agent, ax_0, v_a_t_hs, _, _, _ = plot_pmu(agent, 1, 0, cval_ind, scalar_map, ax_0)
-
-# Adjust properties of the plots
-# ax_0.set_ylim([-0.1, 5.1])
-ax_0.set_ylabel(r'$p_t(\mu)$')
-ax_0.set_xlabel(r'$\mu$')
-ax_0.set_title('No Perceptual Uncertainty')
-ax_0.set_ylim([-0.1, 10.1])
-
-ax_1 = plt.subplot2grid((1, 2), (0, 1), colspan=1, rowspan=1)
-
-# Example of \pi_0 = 1, \pi_1 = 0
-agent, ax_1, v_a_t_hs, _, _, _ = plot_pmu(agent, 0.6, 0.4, cval_ind, scalar_map, ax_1, plot_leg=False)
-
-# Adjust properties of the plots
-ax_1.set_ylabel(r'$p_t(\mu)$')
-ax_1.set_xlabel(r'$\mu$')
-ax_1.set_title('High Perceptual Uncertainty')
-ax_1.set_ylim([-0.1, 10.1])
-
-# Use figure space more efficiently
-plt.tight_layout()
-sns.despine()
-
-# Label letters
-texts = ['a', 'b']
-
-# Add labels
-label_subplots(f, texts)
-
-# plt.savefig('pres_poly_1.pdf', bbox_inches='tight', transparent=True)
-savename = 'gb_figures/gb_sm_figure_2_new.pdf'
-plt.savefig(savename, transparent=True)
 
 # Show figure
 plt.show()
